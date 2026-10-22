@@ -1,0 +1,19 @@
+name = "socks-d1-gateway"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+
+# Secret dùng để xác thực request từ NestJS. Đặt bằng:
+#   wrangler secret put GATEWAY_SECRET --config d1-gateway/wrangler.toml
+# Khi dev local thì khai báo trong d1-gateway/.dev.vars
+
+[[d1_databases]]
+binding = "DB"
+database_name = "socks-db"
+# Thay bằng id thật từ output của `wrangler d1 create socks-db`.
+# Giá trị toàn số 0 chỉ đủ để chạy `wrangler dev` với D1 local.
+database_id = "00000000-0000-0000-0000-000000000000"
+# Migration do drizzle-kit sinh ra nằm ở backend/migrations
+migrations_dir = "../migrations"
+
+[observability]
+enabled = true

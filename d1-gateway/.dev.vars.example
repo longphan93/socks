@@ -1,0 +1,2 @@
+GATEWAY_SECRET=dev-secret-doi-truoc-khi-deploy
+ALLOW_INSECURE=true

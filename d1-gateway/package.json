@@ -1,0 +1,7 @@
+{
+  "name": "d1-gateway",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Cloudflare Worker nhận SQL qua HTTPS và chạy trên D1 binding cho NestJS",
+  "type": "module"
+}

@@ -1,0 +1,12 @@
+# Dịch vụ phụ trợ khi dev. Chạy: npm run mail:dev
+services:
+  mailpit:
+    image: axllent/mailpit:v1.21
+    container_name: socks-mailpit
+    restart: unless-stopped
+    ports:
+      - '1025:1025' # SMTP, trỏ SMTP_HOST/SMTP_PORT vào đây
+      - '8025:8025' # Giao diện web xem email: http://localhost:8025
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
