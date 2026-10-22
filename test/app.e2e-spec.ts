@@ -19,7 +19,9 @@ describe('App (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     app.setGlobalPrefix('api/v1');
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, transform: true }),
+    );
     app.useGlobalInterceptors(new ResponseInterceptor());
     app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost)));
     await app.init();
@@ -30,7 +32,9 @@ describe('App (e2e)', () => {
   });
 
   it('GET /api/v1/health trả envelope { data, message, meta }', async () => {
-    const response = await request(app.getHttpServer()).get('/api/v1/health').expect(200);
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/health')
+      .expect(200);
 
     expect(response.body).toEqual({
       data: {
@@ -44,10 +48,15 @@ describe('App (e2e)', () => {
   });
 
   it('route không tồn tại cũng trả đúng envelope', async () => {
-    const response = await request(app.getHttpServer()).get('/api/v1/khong-ton-tai').expect(404);
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/khong-ton-tai')
+      .expect(404);
 
     expect(response.body.data).toBeNull();
-    expect(response.body.meta).toMatchObject({ statusCode: 404, path: '/api/v1/khong-ton-tai' });
+    expect(response.body.meta).toMatchObject({
+      statusCode: 404,
+      path: '/api/v1/khong-ton-tai',
+    });
   });
 
   it('API chỉ phục vụ dưới prefix /api/v1', async () => {

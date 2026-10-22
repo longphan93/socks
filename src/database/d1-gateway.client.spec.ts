@@ -15,7 +15,10 @@ const config = {
 } as unknown as ConfigService<Env, true>;
 
 const okResponse = (body: unknown) =>
-  new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } });
+  new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  });
 
 const errorResponse = (status: number, code: string) =>
   new Response(JSON.stringify({ error: { code, message: code } }), {
@@ -24,10 +27,12 @@ const errorResponse = (status: number, code: string) =>
   });
 
 describe('isRetryable', () => {
-  it.each(['select 1', '  SELECT * from product', 'with x as (select 1) select * from x', 'PRAGMA foreign_keys'])(
-    'coi "%s" là lệnh đọc',
-    (sql) => expect(isRetryable(sql)).toBe(true),
-  );
+  it.each([
+    'select 1',
+    '  SELECT * from product',
+    'with x as (select 1) select * from x',
+    'PRAGMA foreign_keys',
+  ])('coi "%s" là lệnh đọc', (sql) => expect(isRetryable(sql)).toBe(true));
 
   it.each([
     'insert into product (id) values (?)',
@@ -59,13 +64,21 @@ describe('D1GatewayClient', () => {
   it('gửi SQL kèm header secret và trả về rows', async () => {
     fetchMock.mockResolvedValue(okResponse({ rows: [[1]] }));
 
-    const result = await client.query({ sql: 'select 1', params: [], method: 'all' });
+    const result = await client.query({
+      sql: 'select 1',
+      params: [],
+      method: 'all',
+    });
 
     expect(result).toEqual({ rows: [[1]] });
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('https://gateway.test/query');
     expect(init.headers['x-gateway-secret']).toBe('secret-du-dai-16-ky-tu');
-    expect(JSON.parse(init.body)).toEqual({ sql: 'select 1', params: [], method: 'all' });
+    expect(JSON.parse(init.body)).toEqual({
+      sql: 'select 1',
+      params: [],
+      method: 'all',
+    });
   });
 
   it('thử lại lệnh đọc khi lỗi mạng', async () => {
@@ -73,7 +86,9 @@ describe('D1GatewayClient', () => {
       .mockRejectedValueOnce(new Error('ECONNRESET'))
       .mockResolvedValue(okResponse({ rows: [[1]] }));
 
-    await expect(client.query({ sql: 'select 1', params: [], method: 'all' })).resolves.toEqual({
+    await expect(
+      client.query({ sql: 'select 1', params: [], method: 'all' }),
+    ).resolves.toEqual({
       rows: [[1]],
     });
     expect(fetchMock).toHaveBeenCalledTimes(2);
@@ -83,7 +98,11 @@ describe('D1GatewayClient', () => {
     fetchMock.mockRejectedValue(new Error('ECONNRESET'));
 
     await expect(
-      client.query({ sql: 'insert into product (id) values (?)', params: ['p1'], method: 'run' }),
+      client.query({
+        sql: 'insert into product (id) values (?)',
+        params: ['p1'],
+        method: 'run',
+      }),
     ).rejects.toBeInstanceOf(ServiceUnavailableException);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
@@ -98,7 +117,9 @@ describe('D1GatewayClient', () => {
   });
 
   it('không thử lại khi gateway trả lỗi 4xx', async () => {
-    fetchMock.mockImplementation(async () => errorResponse(401, 'unauthorized'));
+    fetchMock.mockImplementation(async () =>
+      errorResponse(401, 'unauthorized'),
+    );
 
     await expect(
       client.query({ sql: 'select 1', params: [], method: 'all' }),
@@ -108,7 +129,9 @@ describe('D1GatewayClient', () => {
 
   it('thử lại khi gateway trả 5xx rồi bỏ cuộc sau số lần cấu hình', async () => {
     // Mỗi lần gọi phải là một Response mới: body của Response chỉ đọc được một lần.
-    fetchMock.mockImplementation(async () => errorResponse(500, 'query_failed'));
+    fetchMock.mockImplementation(async () =>
+      errorResponse(500, 'query_failed'),
+    );
 
     await expect(
       client.query({ sql: 'select 1', params: [], method: 'all' }),
@@ -117,12 +140,18 @@ describe('D1GatewayClient', () => {
   });
 
   it('mở gói results của batch thành mảng rows', async () => {
-    fetchMock.mockResolvedValue(okResponse({ results: [{ rows: [[1]] }, { rows: [] }] }));
+    fetchMock.mockResolvedValue(
+      okResponse({ results: [{ rows: [[1]] }, { rows: [] }] }),
+    );
 
     await expect(
       client.batch([
         { sql: 'select 1', params: [], method: 'all' },
-        { sql: 'insert into product (id) values (?)', params: ['p1'], method: 'run' },
+        {
+          sql: 'insert into product (id) values (?)',
+          params: ['p1'],
+          method: 'run',
+        },
       ]),
     ).resolves.toEqual([{ rows: [[1]] }, { rows: [] }]);
     expect(fetchMock.mock.calls[0][0]).toBe('https://gateway.test/batch');

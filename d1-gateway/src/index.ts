@@ -53,11 +53,19 @@ export default {
 
       switch (url.pathname) {
         case '/query':
-          return json(await handleQuery(env, await readJson<QueryRequest>(request)));
+          return json(
+            await handleQuery(env, await readJson<QueryRequest>(request)),
+          );
         case '/batch':
-          return json(await handleBatch(env, await readJson<BatchRequest>(request)));
+          return json(
+            await handleBatch(env, await readJson<BatchRequest>(request)),
+          );
         default:
-          throw new GatewayError(404, 'not_found', `Không có route ${url.pathname}`);
+          throw new GatewayError(
+            404,
+            'not_found',
+            `Không có route ${url.pathname}`,
+          );
       }
     } catch (error) {
       return handleError(error, url.pathname);
@@ -67,7 +75,10 @@ export default {
 
 /* ---------------------------------------------------------------- handlers */
 
-async function handleQuery(env: Env, body: QueryRequest): Promise<{ rows: unknown[] }> {
+async function handleQuery(
+  env: Env,
+  body: QueryRequest,
+): Promise<{ rows: unknown[] }> {
   const { sql, params, method } = normalizeQuery(body, 'body');
   const statement = env.DB.prepare(sql).bind(...params);
 
@@ -86,10 +97,16 @@ async function handleBatch(
   body: BatchRequest,
 ): Promise<{ results: { rows: unknown[] }[] }> {
   if (!Array.isArray(body?.queries) || body.queries.length === 0) {
-    throw new GatewayError(400, 'invalid_body', '`queries` phải là mảng không rỗng');
+    throw new GatewayError(
+      400,
+      'invalid_body',
+      '`queries` phải là mảng không rỗng',
+    );
   }
 
-  const queries = body.queries.map((query, index) => normalizeQuery(query, `queries[${index}]`));
+  const queries = body.queries.map((query, index) =>
+    normalizeQuery(query, `queries[${index}]`),
+  );
   const batch = await env.DB.batch(
     queries.map((query) => env.DB.prepare(query.sql).bind(...query.params)),
   );
@@ -100,7 +117,9 @@ async function handleBatch(
 
       // D1 `batch()` không hỗ trợ `.raw()`, nên tự đổi object -> mảng giá trị.
       // D1 giữ nguyên thứ tự cột trong key của object nên thứ tự vẫn khớp SQL.
-      const rows = (result.results ?? []).map((row) => Object.values(row as object));
+      const rows = (result.results ?? []).map((row) =>
+        Object.values(row as object),
+      );
       return { rows: queries[index].method === 'get' ? (rows[0] ?? []) : rows };
     }),
   };
@@ -108,9 +127,16 @@ async function handleBatch(
 
 /* ------------------------------------------------------------------ helpers */
 
-function normalizeQuery(query: QueryRequest, path: string): Required<QueryRequest> {
+function normalizeQuery(
+  query: QueryRequest,
+  path: string,
+): Required<QueryRequest> {
   if (!query || typeof query.sql !== 'string' || query.sql.trim() === '') {
-    throw new GatewayError(400, 'invalid_body', `${path}.sql phải là chuỗi SQL`);
+    throw new GatewayError(
+      400,
+      'invalid_body',
+      `${path}.sql phải là chuỗi SQL`,
+    );
   }
 
   const params = query.params ?? [];
@@ -133,15 +159,32 @@ function normalizeQuery(query: QueryRequest, path: string): Required<QueryReques
 function assertSecureTransport(url: URL, env: Env): void {
   if (url.protocol === 'https:') return;
   if (env.ALLOW_INSECURE === 'true') return;
-  throw new GatewayError(403, 'insecure_transport', 'Gateway chỉ nhận request HTTPS');
+  throw new GatewayError(
+    403,
+    'insecure_transport',
+    'Gateway chỉ nhận request HTTPS',
+  );
 }
 
 function assertSecret(request: Request, env: Env): void {
   if (!env.GATEWAY_SECRET) {
-    throw new GatewayError(500, 'missing_secret', 'Worker chưa cấu hình GATEWAY_SECRET');
+    throw new GatewayError(
+      500,
+      'missing_secret',
+      'Worker chưa cấu hình GATEWAY_SECRET',
+    );
   }
-  if (!timingSafeEqual(request.headers.get('x-gateway-secret') ?? '', env.GATEWAY_SECRET)) {
-    throw new GatewayError(401, 'unauthorized', 'Sai hoặc thiếu header x-gateway-secret');
+  if (
+    !timingSafeEqual(
+      request.headers.get('x-gateway-secret') ?? '',
+      env.GATEWAY_SECRET,
+    )
+  ) {
+    throw new GatewayError(
+      401,
+      'unauthorized',
+      'Sai hoặc thiếu header x-gateway-secret',
+    );
   }
 }
 
@@ -175,7 +218,10 @@ function handleError(error: unknown, path: string): Response {
   if (error instanceof GatewayError) {
     // 401/403 log ở mức cảnh báo để phát hiện request lạ.
     console.warn(`[d1-gateway] ${path} ${error.code}: ${error.message}`);
-    return json({ error: { code: error.code, message: error.message } }, error.status);
+    return json(
+      { error: { code: error.code, message: error.message } },
+      error.status,
+    );
   }
 
   const message = error instanceof Error ? error.message : String(error);

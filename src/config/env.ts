@@ -21,10 +21,14 @@ export enum NodeEnv {
 }
 
 const toInt = () =>
-  Transform(({ value }) => (value === undefined || value === '' ? undefined : Number(value)));
+  Transform(({ value }) =>
+    value === undefined || value === '' ? undefined : Number(value),
+  );
 
 const toBool = () =>
-  Transform(({ value }) => (value === undefined || value === '' ? undefined : value === 'true'));
+  Transform(({ value }) =>
+    value === undefined || value === '' ? undefined : value === 'true',
+  );
 
 /**
  * Biến môi trường của backend.
@@ -42,11 +46,11 @@ export class Env {
   @IsInt()
   @Min(1)
   @Max(65535)
-  PORT = 3000;
+  PORT = 4000;
 
   /** Domain được phép gọi API, phân tách bằng dấu phẩy. */
   @IsString()
-  CORS_ORIGINS = 'http://localhost:3001';
+  CORS_ORIGINS = 'http://localhost:4001';
 
   /* --- D1 gateway (Phase 1) --- */
 
@@ -173,10 +177,16 @@ export function validateEnv(raw: Record<string, unknown>): Env {
     excludeExtraneousValues: false,
   });
 
-  const errors = validateSync(env, { skipMissingProperties: false, whitelist: false });
+  const errors = validateSync(env, {
+    skipMissingProperties: false,
+    whitelist: false,
+  });
   if (errors.length > 0) {
     const details = errors
-      .map((error) => `  - ${error.property}: ${Object.values(error.constraints ?? {}).join(', ')}`)
+      .map(
+        (error) =>
+          `  - ${error.property}: ${Object.values(error.constraints ?? {}).join(', ')}`,
+      )
       .join('\n');
     throw new Error(`Biến môi trường không hợp lệ:\n${details}`);
   }

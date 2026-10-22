@@ -31,7 +31,11 @@ export class ApiResponseDto<T = unknown> {
   @ApiProperty({ description: 'Dữ liệu trả về, null khi lỗi' })
   data!: T | null;
 
-  @ApiProperty({ type: String, nullable: true, description: 'Thông báo cho người dùng' })
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: 'Thông báo cho người dùng',
+  })
   message!: string | null;
 
   @ApiProperty({

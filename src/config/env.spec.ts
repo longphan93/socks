@@ -11,12 +11,17 @@ describe('validateEnv', () => {
     const env = validateEnv({ ...valid });
 
     expect(env.NODE_ENV).toBe(NodeEnv.Development);
-    expect(env.PORT).toBe(3000);
+    expect(env.PORT).toBe(4000);
     expect(env.D1_GATEWAY_RETRIES).toBe(2);
   });
 
   it('ép kiểu số và boolean từ chuỗi', () => {
-    const env = validateEnv({ ...valid, PORT: '4000', SMTP_PORT: '1025', SMTP_SECURE: 'false' });
+    const env = validateEnv({
+      ...valid,
+      PORT: '4000',
+      SMTP_PORT: '1025',
+      SMTP_SECURE: 'false',
+    });
 
     expect(env.PORT).toBe(4000);
     expect(env.SMTP_PORT).toBe(1025);
@@ -38,9 +43,9 @@ describe('validateEnv', () => {
   });
 
   it('vẫn kiểm tra kiểu của biến tuỳ chọn khi có mặt', () => {
-    expect(() => validateEnv({ ...valid, ADMIN_EMAIL: 'khong-phai-email' })).toThrow(
-      /ADMIN_EMAIL/,
-    );
+    expect(() =>
+      validateEnv({ ...valid, ADMIN_EMAIL: 'khong-phai-email' }),
+    ).toThrow(/ADMIN_EMAIL/);
   });
 });
 

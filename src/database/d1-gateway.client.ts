@@ -1,4 +1,8 @@
-import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Env } from '../config/env.js';
 
@@ -23,14 +27,20 @@ export class D1GatewayClient {
   private readonly retries: number;
 
   constructor(config: ConfigService<Env, true>) {
-    this.baseUrl = config.get('D1_GATEWAY_URL', { infer: true }).replace(/\/+$/, '');
+    this.baseUrl = config
+      .get('D1_GATEWAY_URL', { infer: true })
+      .replace(/\/+$/, '');
     this.secret = config.get('D1_GATEWAY_SECRET', { infer: true });
     this.timeoutMs = config.get('D1_GATEWAY_TIMEOUT_MS', { infer: true });
     this.retries = config.get('D1_GATEWAY_RETRIES', { infer: true });
   }
 
   async query(query: SqlQuery): Promise<{ rows: unknown[] }> {
-    return this.send<{ rows: unknown[] }>('/query', query, isRetryable(query.sql));
+    return this.send<{ rows: unknown[] }>(
+      '/query',
+      query,
+      isRetryable(query.sql),
+    );
   }
 
   /**
@@ -46,7 +56,11 @@ export class D1GatewayClient {
     return response.results;
   }
 
-  private async send<T>(path: string, body: unknown, retryable: boolean): Promise<T> {
+  private async send<T>(
+    path: string,
+    body: unknown,
+    retryable: boolean,
+  ): Promise<T> {
     const attempts = retryable ? this.retries + 1 : 1;
     let lastError: unknown;
 
@@ -57,7 +71,8 @@ export class D1GatewayClient {
         lastError = error;
 
         // Gateway đã trả lời và từ chối (SQL sai, sai secret...) thì thử lại vô ích.
-        if (error instanceof GatewayResponseError && error.status < 500) throw error.toHttp();
+        if (error instanceof GatewayResponseError && error.status < 500)
+          throw error.toHttp();
 
         if (attempt < attempts) {
           const backoffMs = 100 * 2 ** (attempt - 1);
@@ -69,7 +84,9 @@ export class D1GatewayClient {
       }
     }
 
-    this.logger.error(`Gọi ${path} thất bại sau ${attempts} lần: ${messageOf(lastError)}`);
+    this.logger.error(
+      `Gọi ${path} thất bại sau ${attempts} lần: ${messageOf(lastError)}`,
+    );
     if (lastError instanceof GatewayResponseError) throw lastError.toHttp();
     throw new ServiceUnavailableException('Không kết nối được cơ sở dữ liệu');
   }

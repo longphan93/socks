@@ -20,11 +20,17 @@ describe('ResponseInterceptor', () => {
     const result = await lastValueFrom(
       new ResponseInterceptor().intercept(
         context,
-        handlerFor(respond([1, 2], { message: 'Thành công', meta: { total: 2 } })),
+        handlerFor(
+          respond([1, 2], { message: 'Thành công', meta: { total: 2 } }),
+        ),
       ),
     );
 
-    expect(result).toEqual({ data: [1, 2], message: 'Thành công', meta: { total: 2 } });
+    expect(result).toEqual({
+      data: [1, 2],
+      message: 'Thành công',
+      meta: { total: 2 },
+    });
   });
 
   it('không bọc null thành undefined', async () => {

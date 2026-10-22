@@ -18,9 +18,11 @@ describe('MemoryCacheService', () => {
   });
 
   it('gộp các lần gọi song song cùng key thành một request', async () => {
-    const load = vi.fn().mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve('x'), 10)),
-    );
+    const load = vi
+      .fn()
+      .mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve('x'), 10)),
+      );
 
     await Promise.all([
       cache.wrap('k', 1000, load),
@@ -64,7 +66,10 @@ describe('MemoryCacheService', () => {
   });
 
   it('không giữ lại lỗi trong cache', async () => {
-    const load = vi.fn().mockRejectedValueOnce(new Error('lỗi mạng')).mockResolvedValue('x');
+    const load = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('lỗi mạng'))
+      .mockResolvedValue('x');
 
     await expect(cache.wrap('k', 1000, load)).rejects.toThrow('lỗi mạng');
     expect(await cache.wrap('k', 1000, load)).toBe('x');

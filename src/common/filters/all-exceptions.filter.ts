@@ -29,7 +29,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const { message, errors } = describe(exception, status);
 
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
-      this.logger.error(message, exception instanceof Error ? exception.stack : undefined);
+      this.logger.error(
+        message,
+        exception instanceof Error ? exception.stack : undefined,
+      );
     }
 
     const body: ApiResponse<null> = {
@@ -61,9 +64,13 @@ function describe(
 
       // ValidationPipe trả message dạng mảng chuỗi lỗi.
       if (Array.isArray(payload.message)) {
-        return { message: 'Dữ liệu gửi lên không hợp lệ', errors: payload.message };
+        return {
+          message: 'Dữ liệu gửi lên không hợp lệ',
+          errors: payload.message,
+        };
       }
-      if (typeof payload.message === 'string') return { message: payload.message };
+      if (typeof payload.message === 'string')
+        return { message: payload.message };
       if (typeof payload.error === 'string') return { message: payload.error };
     }
 

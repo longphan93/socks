@@ -20,7 +20,11 @@ export class MemoryCacheService {
   /** Gộp các lần gọi cùng key đang chạy để không bắn nhiều request trùng nhau. */
   private readonly inflight = new Map<string, Promise<unknown>>();
 
-  async wrap<T>(key: string, ttlMs: number, load: () => Promise<T>): Promise<T> {
+  async wrap<T>(
+    key: string,
+    ttlMs: number,
+    load: () => Promise<T>,
+  ): Promise<T> {
     if (ttlMs <= 0) return load();
 
     const cached = this.entries.get(key);
@@ -49,7 +53,8 @@ export class MemoryCacheService {
         removed++;
       }
     }
-    if (removed > 0) this.logger.debug(`Xoá ${removed} key cache với tiền tố "${prefix}"`);
+    if (removed > 0)
+      this.logger.debug(`Xoá ${removed} key cache với tiền tố "${prefix}"`);
   }
 
   clear(): void {
