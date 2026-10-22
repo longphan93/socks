@@ -20,7 +20,7 @@ cp .env.example .env                                   # sửa D1_GATEWAY_SECRET
 cp d1-gateway/.dev.vars.example d1-gateway/.dev.vars   # GATEWAY_SECRET phải trùng .env
 
 npm run gateway:dev        # cửa sổ 1 — Worker + D1 local, cổng 8787
-npm run db:migrate:local   # áp migration lên D1 local
+npm run build && npm run db:migrate   # tạo bảng trên D1 local
 npm run start:dev          # cửa sổ 2 — API ở cổng 4000
 npm run mail:dev           # cửa sổ 3 — Mailpit, xem email ở http://localhost:8025
 
@@ -42,7 +42,7 @@ npx wrangler login
 npx wrangler d1 create socks-db        # chép database_id vào d1-gateway/wrangler.toml
 npx wrangler secret put GATEWAY_SECRET --config d1-gateway/wrangler.toml
 npm run gateway:deploy                 # lấy URL Worker, điền vào D1_GATEWAY_URL
-npm run db:migrate:remote
+npm run build && npm run db:migrate    # trỏ D1_GATEWAY_URL sang Worker thật trước
 ```
 
 Bucket R2 `socks-media` cần CORS cho phép `PUT` từ domain FE và localhost.
@@ -57,7 +57,7 @@ src/
 ├── database/    client gateway + instance Drizzle
 ├── health/      GET /api/v1/health
 d1-gateway/      Worker có D1 binding, nhận SQL qua HTTPS
-migrations/      SQL do drizzle-kit sinh
+database/migrations/  migration viết tay, xem README trong đó
 scripts/         tiện ích chạy tay
 ```
 
@@ -77,11 +77,20 @@ D1 không có transaction tương tác — thao tác nhiều bước dùng `db.b
 | --- | --- |
 | `npm run gateway:dev` | Worker + D1 local, cổng 8787 |
 | `npm run start:dev` | API watch mode, cổng 4000 |
-| `npm run db:generate` | Sinh migration từ `src/database/schema/` |
-| `npm run db:migrate:local` / `:remote` | Áp migration |
+| `npm run db:migrate` | Chạy migration chưa áp dụng (build trước) |
+| `npm run db:migrate:revert` | Quay lui migration mới nhất |
 | `npm run typecheck` / `lint` / `test` / `test:e2e` / `build` | |
 | `npm run mail:dev` | Mailpit |
 | `npm run r2:test` | Thử presigned upload lên R2 |
 
+## Cài đặt
+
 `npm install` dùng `legacy-peer-deps` (đặt trong `.npmrc`) vì npm 10 lỗi khi
 giải peer dependency vòng của `vite@8`/`vitest@4`.
+
+`@longphan93/nestjs-migration` nằm trên GitHub Packages. `.npmrc` của repo đã
+khai báo registry; token thì đặt ở `~/.npmrc` của từng máy, không commit:
+
+```
+//npm.pkg.github.com/:_authToken=<personal access token có quyền read:packages>
+```

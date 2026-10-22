@@ -52,7 +52,9 @@ NestJS chạy trên Node trong Docker nên **không có D1 binding**. Mọi truy
 qua `backend/d1-gateway` — một Worker nhận `{ sql, params, method }` qua HTTPS,
 xác thực bằng header `x-gateway-secret`, chạy trên binding `DB`.
 
-- ORM là Drizzle với driver `sqlite-proxy`. Không dùng Prisma.
+- ORM là Drizzle với driver `sqlite-proxy`, dùng cho **truy vấn**. Không dùng Prisma.
+- **Schema do migration viết tay quyết định**, không sinh từ Drizzle schema. Xem
+  `src/database/migrations/README.md`.
 - **D1 không có transaction tương tác.** Thao tác nhiều bước (tạo đơn và trừ
   kho) phải dùng `db.batch([...])` — batch của D1 là nguyên tử — kết hợp ràng
   buộc `CHECK` trong schema.
@@ -60,6 +62,18 @@ xác thực bằng header `x-gateway-secret`, chạy trên binding `DB`.
   mới retry khi lỗi mạng.
 - Mỗi truy vấn là một lượt gọi HTTPS. Dữ liệu catalog đọc nhiều, đổi ít thì đi
   qua `MemoryCacheService` (`CATALOG_CACHE_TTL_MS`).
+
+## Migration
+
+Viết tay bằng DSL của `@longphan93/nestjs-migration` — cùng thư viện với các dự
+án khác của team. Thư viện chỉ có executor cho TypeORM và Sequelize, cả hai đều
+không nối tới D1 được, nên dự án này có executor riêng
+`src/database/executors/d1-gateway.executor.ts` sinh thẳng DDL SQLite và đẩy
+qua gateway trong một batch nguyên tử.
+
+Đọc `src/database/migrations/README.md` **trước khi** đụng tới schema: quy tắc
+đặt tên, một bảng một file, và các giới hạn của SQLite mà executor sẽ chặn
+(không thêm được khoá chính / khoá ngoại vào bảng đã tồn tại).
 
 ## Lệnh
 
@@ -69,9 +83,8 @@ Backend (`cd backend`):
 | --- | --- |
 | `npm run gateway:dev` | Worker + D1 local ở cổng 8787 (chạy trước) |
 | `npm run start:dev` | NestJS watch mode |
-| `npm run db:generate` | Sinh migration từ `src/database/schema/` |
-| `npm run db:migrate:local` | Áp migration lên D1 local |
-| `npm run db:migrate:remote` | Áp migration lên D1 thật |
+| `npm run build && npm run db:migrate` | Chạy migration chưa áp dụng |
+| `npm run build && npm run db:migrate:revert` | Quay lui migration mới nhất |
 | `npm run mail:dev` | Mailpit qua Docker |
 | `npm run r2:test` | Thử presigned upload lên R2 |
 | `npm run typecheck` / `lint` / `test` / `test:e2e` / `build` | |
@@ -106,6 +119,33 @@ Trang `/gifts` lọc theo category nhóm `OCCASION`.
 **Không làm trong MVP.** Season, GiftBox, GiftBoxItem, GiftOccasion,
 WrappingOption, Cart, CartItem, Coupon, Payment, tài khoản khách, đánh giá sản
 phẩm. Thấy code hoặc model nào thuộc nhóm này thì xoá luôn.
+
+## Quy ước lấy từ ok-danang-ecosystem
+
+Giữ chung với các dự án khác của team:
+
+- **Hậu tố nói rõ loại.** `…Enum`, `…Interface`, `…Type`, `…Service`,
+  `…Repository`, `…Response`; file `.service.ts`, `.enum.ts`, `.constant.ts`,
+  `.interface.ts`, `.helper.ts`, `.executor.ts`.
+- **Một khai báo xuất ra mỗi file.** Không để `const`, `interface` hay `type` ở
+  đầu file service / executor / helper — chúng nằm trong `constants/` hoặc
+  `interfaces/`, mỗi thứ một file, re-export qua `index.ts`.
+- **Barrel cho `constants/`, `enums/`, `interfaces/`** (không cho `services/`,
+  `helpers/`, `executors/`). Import từ thư mục, không từ file; file bên trong
+  thư mục thì import thẳng file anh em, không đi qua barrel của chính nó.
+- **Có enum thì dùng enum**, không gõ lại giá trị dưới dạng chuỗi thô.
+- **Tối đa 3 tham số vị trí**; quá thì gom thành một params object có interface
+  riêng.
+- **Không query trong vòng lặp.** Đọc một lần bằng `IN`, ghi một câu lệnh.
+- **Nhịp dòng trống**: một dòng trống trước `return`, quanh `if`/`for`/`while`/
+  `try`, và sau cụm khai báo `const`/`let`.
+- **Rất ít comment.** Chỉ viết khi người đọc sẽ undo mất một quyết định.
+- Prettier: single quote, trailing comma, 100 cột, semi, 2 space.
+
+Chưa áp dụng (khác stack, ghi lại để khỏi tranh luận lại): `BaseRepository` và
+`dataSource.transaction` của TypeORM, guard phân quyền nhiều vai, i18n ba thứ
+tiếng. Response envelope giữ `{ data, message, meta }` theo PLAN, không dùng
+`{ success, data, timestamp }` của bên kia.
 
 ## Định dạng response API
 

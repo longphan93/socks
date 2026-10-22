@@ -27,9 +27,9 @@ Tick `[x]` ngay sau khi task chạy được và đã chạy lint/test.
 
 - [x] D1 gateway Worker: `POST /query` và `POST /batch` nhận SQL + params, chạy qua D1 binding (`prepare().bind()`, `batch()`), trả rows; bắt buộc header secret, chỉ nhận request HTTPS, log lỗi
 - [x] `DatabaseModule` trong NestJS: Drizzle `sqlite-proxy` gọi gateway, có timeout và retry cho lỗi mạng (không retry lệnh ghi)
-- [x] Migration: drizzle-kit sinh SQL vào `backend/migrations`, `wrangler.toml` trỏ `migrations_dir` vào đó
-- [x] Migration tự chạy khi khởi động: `start:prod` = `wrangler d1 migrations apply socks-db --remote && node dist/main`; migrate lỗi thì dừng, không khởi động server
-- [x] Dev local: `wrangler dev` chạy gateway với D1 local, script `db:migrate:local`
+- [x] Migration: viết tay bằng DSL `@longphan93/nestjs-migration`, chạy qua `D1GatewayExecutor` tự viết (thư viện chỉ có executor TypeORM/Sequelize, không nối được D1)
+- [x] Migration tự chạy khi khởi động: `start:prod` = `npm run db:migrate && node dist/main`; migrate lỗi thì exit 1, server không khởi động
+- [x] Dev local: `wrangler dev` chạy gateway với D1 local; `db:migrate` chạy thẳng vào đó
 - [x] `ConfigModule` validate biến môi trường (gateway, Cloudflare, R2, SMTP)
 - [x] `ValidationPipe` global, exception filter, interceptor chuẩn hoá response `{ data, message, meta }`
 - [x] Swagger tại `/api/docs`, prefix `/api/v1`
@@ -55,7 +55,7 @@ Tick `[x]` ngay sau khi task chạy được và đã chạy lint/test.
 - [ ] `OrderStatusHistory`: fromStatus, toStatus, note, changedBy, createdAt
 - [ ] `Shipment` (chuẩn bị cho đơn vị vận chuyển): orderId, provider (`MANUAL` mặc định), trackingCode, status, fee, rawPayload
 - [ ] `EmailLog`: orderId, type (`ORDER_CONFIRMATION`/`FEEDBACK_REQUEST`/`ADMIN_NEW_ORDER`), status, attempts, error; **unique (orderId, type)** để chống gửi trùng
-- [ ] Quy ước: tiền `integer` (VND), status/group lưu `text` + hằng số TS; index cho slug, sku, status, createdAt
+- [ ] Quy ước: tiền `integer` (VND), status/group lưu `text` + hằng số TS; index cho slug, sku, status, createdAt. Mỗi bảng một file migration
 - [ ] Seed: category đủ 4 nhóm (5 mùa là category nhóm SEASON), ~30 sản phẩm gán nhiều category, 1 admin từ env, size/màu mặc định, `shipping.fee = 20000`, `shipping.free_from = 300000`
 
 > **Xong khi:** migrate + seed chạy sạch, không còn tham chiếu nào tới model đã xoá (`grep` sạch, build pass).
@@ -228,7 +228,9 @@ sản phẩm, mã giảm giá, hộp quà tự chọn, tích hợp GHN/GHTK qua 
 
 ## Phụ lục — phác thảo Drizzle schema
 
-Dành cho Phase 2, viết vào `backend/src/database/schema/`. Chưa migrate.
+Dành cho Phase 2, viết vào `backend/src/database/schema/`. **Đây là khai báo để
+Drizzle truy vấn có type, không phải nguồn sinh migration** — bảng thật do các file
+trong `src/database/migrations/` tạo ra, viết tay, mỗi bảng một file.
 Drizzle đặt `casing: 'snake_case'` nên cột trong DB là snake_case.
 
 ```ts
