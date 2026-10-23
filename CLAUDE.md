@@ -25,7 +25,7 @@ socks/
     │   ├── d1-gateway/    Cloudflare Worker có D1 binding
     │   └── scripts/
     └── frontend/      @socks/frontend — Next.js App Router (cổng 4001)
-        ├── app/
+        ├── app/           storefront và /admin dùng chung một app
         ├── components/    ui/ (design system) và layout/
         └── lib/           api/, cart/, tiện ích
 ```
@@ -104,6 +104,8 @@ trong `.npmrc` ở root) vì npm 10 gặp lỗi khi giải peer dependency vòng
 hằng số `SCREAMING_SNAKE_CASE`. Cột DB `snake_case` (Drizzle đặt
 `casing: 'snake_case'` nên code viết camelCase là đủ). URL tiếng Anh:
 `/categories/[slug]`, `/gifts`, `/products/[slug]`, `/cart`, `/checkout`.
+Trang quản trị là route `/admin/*` trong cùng app Next.js, không phải một
+workspace riêng — dùng chung design system và `apiFetch` với storefront.
 
 **Import trong backend.** Dự án là ESM `nodenext` — import file nội bộ phải có
 đuôi `.js`: `import { Env } from './config/env.js'`.

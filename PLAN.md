@@ -227,9 +227,34 @@ Luồng status hợp lệ:
 
 Làm ngay sau Phase 4. Đây là lát cắt đầu tiên khiến trang quản trị dùng được thật.
 
+Admin nằm trong chính app `apps/frontend`, không phải workspace riêng — dùng
+chung design system, `apiFetch`, `formatVnd` đã có từ Phase 9.
+
+Lưu ý về layout: layout của Next lồng nhau, nên `app/admin/layout.tsx` vẫn nằm
+**bên trong** `app/layout.tsx` và sẽ kéo theo Header + Footer của storefront.
+Muốn admin có khung riêng thì phải đẩy storefront xuống một route group
+`app/(storefront)/` và để layout gốc chỉ còn phần dùng chung:
+
+```
+app/
+├── layout.tsx            <html>, font, <Toaster /> — không Header/Footer
+├── (storefront)/
+│   ├── layout.tsx        Header + Footer
+│   ├── page.tsx          trang chủ
+│   ├── cart/ search/ ...
+└── admin/
+    ├── layout.tsx        sidebar + topbar
+    ├── login/page.tsx
+    └── categories/ products/ ...
+```
+
+Route group `(storefront)` không xuất hiện trong URL, nên `/`, `/cart` giữ
+nguyên đường dẫn.
+
 - [ ] `/admin/login`: form đăng nhập, lưu JWT, báo lỗi sai mật khẩu rõ ràng
 - [ ] Middleware chặn toàn bộ `/admin/*` khi chưa đăng nhập, hết hạn token thì đá về login
-- [ ] Khung admin: layout riêng (sidebar + topbar), **không dùng header/footer của storefront**, có nút đăng xuất
+- [ ] Tách route group: chuyển trang storefront vào `app/(storefront)/` với layout chứa Header + Footer, `app/layout.tsx` gốc chỉ còn `<html>`, font và `<Toaster />`
+- [ ] Khung admin ở `app/admin/layout.tsx`: sidebar + topbar, **không có header/footer của storefront**, có nút đăng xuất
 - [ ] Quản lý category: danh sách gom theo `group`, tạo / sửa / bật tắt / đổi `sortOrder`
 - [ ] Quản lý size và màu (`variant_options`): thêm / sửa / ẩn, màu có chọn mã hex
 - [ ] Quản lý product: danh sách có tìm kiếm và phân trang, tạo / sửa, gán nhiều category, thêm biến thể (size + màu + giá + tồn kho)
@@ -521,6 +546,7 @@ export const emailLogs = sqliteTable(
 | 10 | Miễn phí ship | Đơn từ 300.000 ₫ trở lên được miễn phí giao hàng |
 | 11 | Tài liệu chung | `CLAUDE.md` và `PLAN.md` nằm ở gốc monorepo |
 | 12 | Dockerfile | Một image chứa cả hai app, build thẳng từ monorepo |
+| 13 | Chỗ đặt trang admin | Route `/admin/*` **trong chính app `apps/frontend`**, không tách workspace riêng |
 
 Ảnh hưởng tới schema Phase 2:
 
