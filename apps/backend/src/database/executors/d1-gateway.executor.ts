@@ -15,6 +15,7 @@ interface PendingTable {
   columns: TableColumnOptions[];
   primaryKey?: CreatePrimaryKeyAction;
   foreignKeys: CreateForeignKeyAction[];
+  indexes: CreateIndexAction[];
 }
 
 /**
@@ -40,7 +41,7 @@ export class D1GatewayExecutor extends BaseExecutor {
 
   async createTable(name: string, columns: TableColumnOptions[]): Promise<void> {
     this.flushPendingTable();
-    this.pending = { name, columns, foreignKeys: [] };
+    this.pending = { name, columns, foreignKeys: [], indexes: [] };
   }
 
   async createPrimary(table: string, action: CreatePrimaryKeyAction): Promise<void> {
@@ -64,14 +65,17 @@ export class D1GatewayExecutor extends BaseExecutor {
   }
 
   async createIndex(table: string, action: CreateIndexAction): Promise<void> {
-    const name = action.constraintName ?? `${table}_${action.columns.join('_')}_idx`;
-    const columns = action.columns.map(quoteIdentifier).join(', ');
+    // `CreateTableBuilder` chạy action của cột (trong đó có .index()) TRƯỚC
+    // action của bảng (primaryColumns). Xả bảng ngay ở đây thì khoá chính
+    // nhiều cột không bao giờ kịp vào CREATE TABLE, nên index của bảng đang
+    // chờ được giữ lại và phát sau khi xả.
+    if (this.pending?.name === table) {
+      this.pending.indexes.push(action);
 
-    // Index luôn đứng sau CREATE TABLE nên bảng chờ phải được xả trước.
-    this.flushPendingTable();
-    this.push(
-      `CREATE INDEX IF NOT EXISTS ${quoteIdentifier(name)} ON ${quoteIdentifier(table)} (${columns})`,
-    );
+      return;
+    }
+
+    this.push(this.renderIndex(table, action));
   }
 
   async createColumn(table: string, column: TableColumnOptions): Promise<void> {
@@ -123,7 +127,7 @@ export class D1GatewayExecutor extends BaseExecutor {
   private flushPendingTable(): void {
     if (!this.pending) return;
 
-    const { name, columns, primaryKey, foreignKeys } = this.pending;
+    const { name, columns, primaryKey, foreignKeys, indexes } = this.pending;
     this.pending = null;
 
     const inlinePrimary = columns.filter((column) => column.isPrimary);
@@ -149,6 +153,17 @@ export class D1GatewayExecutor extends BaseExecutor {
     this.push(
       `CREATE TABLE IF NOT EXISTS ${quoteIdentifier(name)} (\n  ${parts.join(',\n  ')}\n)`,
     );
+
+    for (const index of indexes) {
+      this.push(this.renderIndex(name, index));
+    }
+  }
+
+  private renderIndex(table: string, action: CreateIndexAction): string {
+    const name = action.constraintName ?? `${table}_${action.columns.join('_')}_idx`;
+    const columns = action.columns.map(quoteIdentifier).join(', ');
+
+    return `CREATE INDEX IF NOT EXISTS ${quoteIdentifier(name)} ON ${quoteIdentifier(table)} (${columns})`;
   }
 
   private renderColumn(column: TableColumnOptions, allowInlinePrimary = true): string {

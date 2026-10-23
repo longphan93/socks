@@ -4,12 +4,16 @@ import { CATEGORY_GROUPS, type Category, type CategoryGroup } from './types';
 
 export type CategoryMenu = Record<CategoryGroup, Category[]>;
 
-const EMPTY_MENU: CategoryMenu = {
-  SEASON: [],
-  TYPE: [],
-  AUDIENCE: [],
-  OCCASION: [],
-};
+/** Dựng từ CATEGORY_GROUPS để thêm nhóm không phải sửa hai chỗ. */
+function emptyMenu(): CategoryMenu {
+  const menu = {} as CategoryMenu;
+
+  for (const group of CATEGORY_GROUPS) {
+    menu[group] = [];
+  }
+
+  return menu;
+}
 
 /**
  * Menu header dựng từ category, nhóm theo `group`.
@@ -25,17 +29,12 @@ export async function getCategoryMenu(): Promise<CategoryMenu> {
     const categories = await apiFetch<Category[]>('/categories');
     return groupByCategoryGroup(categories);
   } catch {
-    return EMPTY_MENU;
+    return emptyMenu();
   }
 }
 
 export function groupByCategoryGroup(categories: Category[]): CategoryMenu {
-  const menu: CategoryMenu = {
-    SEASON: [],
-    TYPE: [],
-    AUDIENCE: [],
-    OCCASION: [],
-  };
+  const menu = emptyMenu();
 
   for (const category of categories) {
     if (CATEGORY_GROUPS.includes(category.group))

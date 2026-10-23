@@ -20,6 +20,8 @@
     "db:migrate:revert": "npm run db:migrate:revert -w @socks/backend",
     "mail:dev": "npm run mail:dev -w @socks/backend",
     "docker:build": "docker build -t socks:local .",
-    "docker:run": "docker run --rm -p 4000:4000 -p 4001:4001 --env-file apps/backend/.env socks:local"
+    "docker:run": "docker run --rm -p 4000:4000 -p 4001:4001 --env-file apps/backend/.env socks:local",
+    "db:seed": "npm run db:seed -w @socks/backend",
+    "db:seed:demo": "npm run db:seed:demo -w @socks/backend"
   }
 }

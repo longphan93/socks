@@ -12,8 +12,8 @@ nó cần — để có trang quản trị dùng được sớm thay vì đợi 
 | 1 | Phase 0 — Nền tảng chung | xong (còn vài việc trên Cloudflare) |
 | 2 | Phase 1 — BE core và migration | xong |
 | 3 | Phase 9 — FE nền tảng | xong |
-| 4 | **Phase 2 — Database schema MVP** | ← tiếp theo |
-| 5 | Phase 3 — BE Admin auth | |
+| 4 | Phase 2 — Database schema MVP | xong |
+| 5 | **Phase 3 — BE Admin auth** | ← tiếp theo |
 | 6 | Phase 4 — BE Catalog | |
 | 7 | **Phase 12a — FE Admin: đăng nhập + quản lý catalog** | **admin dùng được từ đây** |
 | 8 | Phase 5 — BE Upload ảnh | |
@@ -259,24 +259,34 @@ So với Bonne Maison: vẫn giữ hero ảnh lớn và khối bộ sưu tập, 
 
 ## Phase 2 — Database schema MVP
 
-- [ ] Xoá model và code liên quan: Season, GiftBox, GiftBoxItem, GiftOccasion, WrappingOption, Cart, CartItem, Coupon, Payment, Address, Review, tài khoản khách
-- [ ] `AdminUser`: email, passwordHash, name
-- [ ] `Category`: name và description là **cột JSON `{vi, en}`**; slug (một bản dùng chung), group (`SEASON`/`TYPE`/`AUDIENCE`/`OCCASION`/`COLLECTION`), imageUrl, sortOrder, isActive, isFeatured
-- [ ] `ProductCategory`: bảng nối many-to-many tường minh (productId, categoryId, sortOrder)
-- [ ] `Product` (name, description là cột JSON `{vi, en}`), `ProductVariant` (size, màu, SKU, giá, tồn kho), `ProductImage` (r2Key, url, alt JSON `{vi, en}`, sortOrder)
-- [ ] `VariantOption`: danh sách size và màu do admin quản lý (kind, value, label JSON `{vi, en}`, hexColor, sortOrder) — biến thể tham chiếu vào đây để bộ lọc Phase 4 không bị tách giá trị
-- [ ] `ShippingMethod`: code, name JSON `{vi, en}`, description JSON, **fee** (mức tối thiểu / mức hiển thị), **feeMax** (null nếu phí cố định; có giá trị thì giao diện hiện dạng khoảng và ghi "chốt khi xác nhận"), freeFrom, areaNote, estimatedTime, isPickup, sortOrder, isActive — seed 4 bản ghi, `freeFrom = 300000` cho cả bốn
-- [ ] `Order` thêm: `shippingMethodId`, `shippingFee` (admin sửa được), **`discount`** (số nguyên VND, mặc định 0, admin nhập tay) và `discountNote`; `total = subtotal - discount + shippingFee`
-- [ ] `Setting`: key/value cho kênh liên hệ (`contact.zalo`, `contact.phone`, `contact.facebook`, `contact.instagram`) và các tham số admin sửa được mà không cần deploy
-- [ ] `Order`: code (`SK-YYYYMMDD-XXXX`), customerName, email, phone, province, ward, street, note, locale, subtotal, discount, shippingFee, total, status, internalNote
-- [ ] `OrderItem`: snapshot tên, biến thể, đơn giá, số lượng
-- [ ] `OrderStatusHistory`: fromStatus, toStatus, note, changedBy, createdAt — dùng chung để ghi cả **thay đổi phí ship và giảm giá** (field, giá trị cũ, giá trị mới)
-- [ ] `Shipment` (chuẩn bị cho đơn vị vận chuyển): orderId, provider (`MANUAL` mặc định), trackingCode, status, fee, rawPayload
-- [ ] `EmailLog`: orderId, type (`ORDER_CONFIRMATION`/`FEEDBACK_REQUEST`/`ADMIN_NEW_ORDER`), status, attempts, error; **unique (orderId, type)** để chống gửi trùng
-- [ ] Quy ước: tiền `integer` (VND), status/group lưu `text` + hằng số TS; index cho slug, sku, status, createdAt. Mỗi bảng một file migration
-- [ ] Seed: category đủ 4 nhóm (5 mùa là category nhóm SEASON), ~30 sản phẩm gán nhiều category, 1 admin từ env, size/màu mặc định, 4 hình thức giao hàng, kênh liên hệ
+- [x] Xoá model và code liên quan: Season, GiftBox, GiftBoxItem, GiftOccasion, WrappingOption, Cart, CartItem, Coupon, Payment, Address, Review, tài khoản khách — **không có gì để xoá**, dự án dựng từ đầu
+- [x] `AdminUser`: email, passwordHash, name
+- [x] `Category`: name và description là **cột JSON `{vi, en}`**; slug (một bản dùng chung), group (`SEASON`/`TYPE`/`AUDIENCE`/`OCCASION`/`COLLECTION`), imageUrl, sortOrder, isActive, isFeatured
+- [x] `ProductCategory`: bảng nối many-to-many tường minh (productId, categoryId, sortOrder)
+- [x] `Product` (name, description là cột JSON `{vi, en}`), `ProductVariant` (size, màu, SKU, giá, tồn kho), `ProductImage` (r2Key, url, alt JSON `{vi, en}`, sortOrder)
+- [x] `VariantOption`: danh sách size và màu do admin quản lý (kind, value, label JSON `{vi, en}`, hexColor, sortOrder) — biến thể tham chiếu vào đây để bộ lọc Phase 4 không bị tách giá trị
+- [x] `ShippingMethod`: code, name JSON `{vi, en}`, description JSON, **fee** (mức tối thiểu / mức hiển thị), **feeMax** (null nếu phí cố định; có giá trị thì giao diện hiện dạng khoảng và ghi "chốt khi xác nhận"), freeFrom, areaNote, estimatedTime, isPickup, sortOrder, isActive — seed 4 bản ghi, `freeFrom = 300000` cho cả bốn
+- [x] `Order` thêm: `shippingMethodId`, `shippingFee` (admin sửa được), **`discount`** (số nguyên VND, mặc định 0, admin nhập tay) và `discountNote`; `total = subtotal - discount + shippingFee`
+- [x] `Setting`: key/value cho kênh liên hệ (`contact.zalo`, `contact.phone`, `contact.facebook`, `contact.instagram`) và các tham số admin sửa được mà không cần deploy
+- [x] `Order`: code (`SK-YYYYMMDD-XXXX`), customerName, email, phone, province, ward, street, note, locale, subtotal, discount, shippingFee, total, status, internalNote
+- [x] `OrderItem`: snapshot tên, biến thể, đơn giá, số lượng
+- [x] `OrderStatusHistory`: fromStatus, toStatus, note, changedBy, createdAt — dùng chung để ghi cả **thay đổi phí ship và giảm giá** (field, giá trị cũ, giá trị mới)
+- [x] `Shipment` (chuẩn bị cho đơn vị vận chuyển): orderId, provider (`MANUAL` mặc định), trackingCode, status, fee, rawPayload
+- [x] `EmailLog`: orderId, type (`ORDER_CONFIRMATION`/`FEEDBACK_REQUEST`/`ADMIN_NEW_ORDER`), status, attempts, error; **unique (orderId, type)** để chống gửi trùng
+- [x] Quy ước: tiền `integer` (VND), status/group lưu `text` + hằng số TS; index cho slug, sku, status, createdAt. Mỗi bảng một file migration
+- [x] Seed: category đủ 4 nhóm (5 mùa là category nhóm SEASON), ~30 sản phẩm gán nhiều category, 1 admin từ env, size/màu mặc định, 4 hình thức giao hàng, kênh liên hệ
 
-> **Xong khi:** migrate + seed chạy sạch, không còn tham chiếu nào tới model đã xoá (`grep` sạch, build pass).
+> **Xong khi:** migrate + seed chạy sạch, không còn tham chiếu nào tới model đã xoá (`grep` sạch, build pass). ✅
+>
+> 14 bảng, 14 file migration. Đã chạy từ DB trống: migrate sạch, seed cấu trúc
+> (15 size/màu · 23 category · 4 hình thức giao · 5 setting) và seed demo
+> (30 sản phẩm · 120 biến thể · 91 liên kết) đều idempotent. Kiểm bằng SQL:
+> khoá chính 2 cột của `product_categories`, `CHECK (stock >= 0)` chặn tồn âm,
+> cột JSON lưu đúng `{vi, en}`.
+>
+> Hai lỗi phát hiện khi chạy thật, đã sửa: executor xả bảng quá sớm khi cột có
+> `.index()` làm mất khoá chính nhiều cột; và D1 giới hạn 100 tham số bind mỗi
+> câu lệnh nên insert hàng loạt phải chia lô.
 
 Phác thảo schema ở [phụ lục cuối file](#phụ-lục--phác-thảo-drizzle-schema).
 

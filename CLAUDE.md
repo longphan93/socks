@@ -64,6 +64,9 @@ xác thực bằng header `x-gateway-secret`, chạy trên binding `DB`.
   mới retry khi lỗi mạng.
 - Mỗi truy vấn là một lượt gọi HTTPS. Dữ liệu catalog đọc nhiều, đổi ít thì đi
   qua `MemoryCacheService` (`CATALOG_CACHE_TTL_MS`).
+- **D1 chỉ nhận 100 tham số bind mỗi câu lệnh.** Insert nhiều dòng phải đi qua
+  `insertInChunks()` (`src/database/helpers/`), nó tự tính số dòng mỗi lô theo
+  số cột của bảng. Quên là gặp `too many SQL variables`.
 
 ## Migration
 

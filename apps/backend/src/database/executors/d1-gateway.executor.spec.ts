@@ -60,6 +60,21 @@ describe('D1GatewayExecutor', () => {
     expect(index).toBe('CREATE INDEX IF NOT EXISTS "products_slug_idx" ON "products" ("slug")');
   });
 
+  it('index trên cột không làm mất khoá chính nhiều cột khai báo sau đó', async () => {
+    // CreateTableBuilder chạy action của cột trước action của bảng, nên nếu
+    // .index() xả bảng ra SQL ngay thì primaryColumns() tới sau sẽ hỏng.
+    const [create, index] = await sqlOf((table) => {
+      table.column('product_id').uuid();
+      table.column('category_id').uuid().index();
+      table.primaryColumns(['product_id', 'category_id']);
+    }, 'product_categories');
+
+    expect(create).toContain('PRIMARY KEY ("product_id", "category_id")');
+    expect(index).toBe(
+      'CREATE INDEX IF NOT EXISTS "product_categories_category_id_idx" ON "product_categories" ("category_id")',
+    );
+  });
+
   it('AUTOINCREMENT chỉ chấp nhận trên integer primary key', async () => {
     const [sql] = await sqlOf((table) => {
       table.column('id').integer().primary().autoIncrement();
