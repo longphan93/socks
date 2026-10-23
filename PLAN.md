@@ -22,13 +22,119 @@ nó cần — để có trang quản trị dùng được sớm thay vì đợi 
 | 11 | Phase 7 — BE Quản lý đơn hàng | |
 | 12 | Phase 8 — BE Email | |
 | 13 | **Phase 12c — FE Admin: đơn hàng, dashboard, cài đặt** | |
-| 14 | Phase 10 — FE Storefront | |
-| 15 | Phase 11 — FE Giỏ hàng và Checkout | |
-| 16 | Phase 13 — Hoàn thiện và Deploy | |
+| 14 | **Phase 9b — FE Thành phần storefront + i18n** | |
+| 15 | Phase 10 — FE Storefront | |
+| 16 | Phase 11 — FE Giỏ hàng và Checkout | |
+| 17 | Phase 13 — Hoàn thiện và Deploy | |
 
 Vì sao admin đi trước storefront: có admin thì nhập được category và sản phẩm
 thật, nên tới lượt dựng storefront đã có dữ liệu thật để nhìn, không phải bịa
 dữ liệu mẫu rồi sửa lại sau.
+
+---
+
+## Chuẩn giao diện tham chiếu
+
+Site mẫu: [bonnemaison.fr](https://www.bonnemaison.fr/) — hãng tất Pháp, Shopify.
+Đã đọc cấu trúc trang chủ ngày 2026-10-23. Những gì lấy về làm chuẩn:
+
+**Trang chủ là một bài biên tập, không phải lưới sản phẩm.** Thứ tự khối của họ:
+
+```
+thanh thông báo
+header + mega menu
+hero toàn chiều rộng = bộ sưu tập đang chạy
+carousel sản phẩm
+banner biên tập (một chủ đề, ảnh lớn + tên)
+carousel sản phẩm
+banner biên tập
+khối cam kết (chất liệu, sản xuất tại Pháp)
+đăng ký nhận tin
+footer
+```
+
+Không có khối "sản phẩm mới nhất" kiểu liệt kê. Mỗi carousel đứng sau một banner
+giới thiệu chủ đề, nên người xem luôn biết đang nhìn bộ nào.
+
+**Thẻ sản phẩm có chọn size ngay trên thẻ** (hiện 36 / 38 / 39 / 41 và nút thêm
+nhanh), không bắt vào trang chi tiết mới mua được.
+
+**Phân loại hai trục.** Kiểu dáng (`chaussettes`, `mi-bas`, `socquettes`) và bộ
+sưu tập theo chủ đề (`dimanche`, `colombage`, `conte-indien`, `les-unies`...).
+Tên sản phẩm đặt theo hoạ tiết chứ không phải mã: "Chaussettes Le Tapis",
+"Mi-Bas Papillons de Nuit".
+
+**Footer là một trung tâm tin cậy**, không phải bãi link:
+- 4 cam kết: chất lượng · thanh toán an toàn · miễn phí ship từ mức X · đổi trả
+- Liên hệ: email, địa chỉ cửa hàng, giờ mở cửa
+- Ba cột: thương hiệu · hậu mãi · pháp lý
+- Dãy logo phương thức thanh toán
+
+**Có trang tra cứu đơn hàng** (`/pages/suivi-de-commande`) vì khách không cần tài
+khoản vẫn phải theo dõi được đơn. Dự án này cũng không có tài khoản khách nên
+thiếu trang đó là thiếu hẳn một đường đi.
+
+**Trang hỗ trợ tách riêng**: bảng size, hướng dẫn bảo quản, giao hàng, đổi trả.
+Với mặt hàng tất thì bảng size là trang được mở nhiều, không phải phụ lục.
+
+### Chỗ KHÔNG bê nguyên
+
+- Họ không có trục "dịp tặng quà" — mà `OCCASION` lại đúng là nửa tên dự án này.
+  Giữ nguyên 4 nhóm `SEASON / TYPE / AUDIENCE / OCCASION`, **thêm nhóm thứ năm
+  `COLLECTION`** cho bộ sưu tập theo chủ đề. `group` lưu dạng text nên thêm nhóm
+  không phải đổi schema.
+- Họ bán thẻ quà tặng và sách; MVP này không có.
+
+---
+
+## Đa ngôn ngữ
+
+Làm từ đầu, không phải việc bổ sung sau. Hai ngôn ngữ: **tiếng Việt (mặc định)**
+và **tiếng Anh**. Tiền luôn là VND ở cả hai — không quy đổi tiền tệ trong MVP.
+
+**Đường dẫn.** `next-intl` với `localePrefix: 'as-needed'`: tiếng Việt giữ
+nguyên `/products/[slug]`, tiếng Anh thêm tiền tố `/en/products/[slug]`. Nhờ vậy
+mọi URL đã chốt không đổi, và trang tiếng Anh vẫn có URL riêng để index.
+
+**Chuỗi giao diện.** `apps/frontend/messages/{vi,en}.json`, gọi qua `t('key')`.
+Không hardcode chuỗi trong component — kể cả chuỗi tiếng Việt.
+
+**Lỗi từ backend là i18n key, không phải câu.** Giống `ok-danang-ecosystem`:
+`throw new BadRequestException('order.out_of_stock')`, key nằm ở
+`apps/backend/src/i18n/{vi,en}/<domain>.json`, filter dịch theo header
+`Accept-Language`. **Thiếu key ở một ngôn ngữ là client nhận được chuỗi key thô**,
+nên thêm key phải thêm đủ cả hai file.
+
+**Nội dung trong DB dịch bằng cột JSON.** Tên và mô tả category, product,
+nhãn size/màu lưu `{"vi": "...", "en": "..."}` thay vì hai cột riêng — thêm ngôn
+ngữ sau này không phải migrate. Đây cũng là cách `ok-danang-ecosystem` đang làm.
+`slug` chỉ có **một** bản dùng chung cho mọi ngôn ngữ, vì URL đã quy ước tiếng Anh.
+
+Thiếu bản dịch tiếng Anh thì rơi về tiếng Việt, không hiện ô trống.
+
+### Việc phải làm lại ở Phase 9
+
+Phase 9 dựng xong trước khi có quyết định này nên **41 chuỗi tiếng Việt đang
+hardcode** trong `app/`, `components/`. Phase 9b phải bóc hết ra file messages —
+đây là nợ kỹ thuật có thật, không phải việc phát sinh.
+
+## Tính năng theo văn hoá Việt Nam
+
+Giao diện và luồng học theo site tham chiếu, nhưng nghiệp vụ thì theo thói quen
+mua hàng trong nước:
+
+- **Dịp tặng quà là một trục phân loại chính** (`OCCASION`): Tết, Valentine,
+  8/3, 20/10, Noel, sinh nhật. Site tham chiếu không có trục này.
+- **Số điện thoại là danh tính của đơn hàng**, không phải email. Tra cứu đơn
+  bằng mã + SĐT; team gọi xác nhận trước khi giao.
+- **COD mặc định**, không thanh toán online trong MVP.
+- **Zalo là kênh liên hệ chính** bên cạnh điện thoại — đưa vào footer và trang
+  liên hệ, đứng trước email.
+- **Địa chỉ hai cấp** tỉnh/thành → xã/phường theo cải cách 2025.
+- **Gói quà và thiệp viết tay miễn phí** nêu rõ ở trang sản phẩm thuộc nhóm
+  `OCCASION`, không giấu trong phần mô tả.
+- Mốc miễn phí ship **300.000 ₫** hiện ở thanh thông báo và trong giỏ hàng
+  ("mua thêm X để được miễn phí giao hàng").
 
 ---
 
@@ -76,10 +182,10 @@ dữ liệu mẫu rồi sửa lại sau.
 
 - [ ] Xoá model và code liên quan: Season, GiftBox, GiftBoxItem, GiftOccasion, WrappingOption, Cart, CartItem, Coupon, Payment, Address, Review, tài khoản khách
 - [ ] `AdminUser`: email, passwordHash, name
-- [ ] `Category`: name, slug, group (`SEASON`/`TYPE`/`AUDIENCE`/`OCCASION`), description, imageUrl, sortOrder, isActive, isFeatured
+- [ ] `Category`: name và description là **cột JSON `{vi, en}`**; slug (một bản dùng chung), group (`SEASON`/`TYPE`/`AUDIENCE`/`OCCASION`/`COLLECTION`), imageUrl, sortOrder, isActive, isFeatured
 - [ ] `ProductCategory`: bảng nối many-to-many tường minh (productId, categoryId, sortOrder)
-- [ ] `Product`, `ProductVariant` (size, màu, SKU, giá, tồn kho), `ProductImage` (r2Key, url, sortOrder)
-- [ ] `VariantOption`: danh sách size và màu do admin quản lý (kind, value, label, hexColor, sortOrder) — biến thể tham chiếu vào đây để bộ lọc Phase 4 không bị tách giá trị
+- [ ] `Product` (name, description là cột JSON `{vi, en}`), `ProductVariant` (size, màu, SKU, giá, tồn kho), `ProductImage` (r2Key, url, alt JSON `{vi, en}`, sortOrder)
+- [ ] `VariantOption`: danh sách size và màu do admin quản lý (kind, value, label JSON `{vi, en}`, hexColor, sortOrder) — biến thể tham chiếu vào đây để bộ lọc Phase 4 không bị tách giá trị
 - [ ] `Setting`: key/value cho phí ship và các tham số admin sửa được mà không cần deploy
 - [ ] `Order`: code (`SK-YYYYMMDD-XXXX`), customerName, email, phone, province, ward, street, note, subtotal, shippingFee, total, status, internalNote
 - [ ] `OrderItem`: snapshot tên, biến thể, đơn giá, số lượng
@@ -109,6 +215,7 @@ Phác thảo schema ở [phụ lục cuối file](#phụ-lục--phác-thảo-dri
 
 - [ ] Danh sách sản phẩm: lọc theo nhiều category slug, khoảng giá, size, màu; tìm theo tên; sắp xếp; phân trang
 - [ ] Chi tiết sản phẩm theo slug, kèm biến thể, ảnh, danh sách category
+- [ ] Mọi response có nội dung dịch được đều **giải theo `Accept-Language`** rồi mới trả: client nhận chuỗi đã chọn ngôn ngữ, không nhận cả object `{vi, en}`. Thiếu bản dịch thì rơi về tiếng Việt
 - [ ] API category gom theo group, category nổi bật, sản phẩm theo mùa hiện tại (category SEASON ứng với tháng hiện tại)
 - [ ] Admin CRUD category và product; gán/bỏ nhiều category cho một product
 - [ ] Xoá category chỉ xoá liên kết, không xoá product
@@ -135,6 +242,7 @@ Phác thảo schema ở [phụ lục cuối file](#phụ-lục--phác-thảo-dri
 - [ ] Tính lại giá từ DB (không tin giá client gửi), phí ship lấy từ `settings` (`shipping.fee`, mặc định 20.000 ₫), miễn phí khi vượt `shipping.free_from` nếu có đặt
 - [ ] Trừ kho bằng một D1 batch (atomic), bảng biến thể có ràng buộc `CHECK (stock >= 0)` để thiếu hàng thì cả batch rollback; snapshot giá vào OrderItem, sinh mã đơn, status `PENDING_CONFIRMATION`
 - [ ] `POST /cart/validate`: kiểm tra giá và tồn kho mới nhất cho giỏ lưu ở trình duyệt
+- [ ] Lưu `locale` của khách lúc đặt đơn, để email và trang tra cứu dùng đúng ngôn ngữ
 - [ ] Chống spam: throttler theo IP, giới hạn số lượng mỗi dòng, trường honeypot
 - [ ] Sau khi commit đơn: ghi `EmailLog` cho email xác nhận gửi khách và email báo đơn mới cho team; gửi lỗi không làm hỏng đơn
 
@@ -168,7 +276,7 @@ Luồng status hợp lệ:
 
 ## Phase 8 — BE Email
 
-- [ ] `MailModule` (nodemailer SMTP), template tiếng Việt cho 3 loại email
+- [ ] `MailModule` (nodemailer SMTP), template cho 3 loại email, **mỗi loại có bản vi và en**, chọn theo ngôn ngữ khách dùng lúc đặt (lưu `locale` trên đơn)
 - [ ] Email xác nhận đơn gửi khách: mã đơn, sản phẩm, tổng tiền, địa chỉ, lời nhắn "team sẽ liên hệ xác nhận"
 - [ ] Email báo đơn mới cho team (`ADMIN_NOTIFY_EMAIL`)
 - [ ] Email xin feedback: lắng nghe `order.status_changed`, khi sang COMPLETED thì tạo `EmailLog` type `FEEDBACK_REQUEST`; nhờ unique (orderId, type), insert thất bại nghĩa là đã gửi rồi → bỏ qua
@@ -192,6 +300,31 @@ Luồng status hợp lệ:
 
 ---
 
+## Phase 9b — FE Thành phần storefront
+
+Phase 9 đã có primitive (Button, Input, Select, Badge, Modal, Toast, Skeleton).
+Đây là các thành phần ghép, dựng trước khi lắp trang ở Phase 10 để mỗi trang
+không tự chế một kiểu.
+
+- [ ] Cài `next-intl`, `localePrefix: 'as-needed'` (vi không tiền tố, en là `/en/...`), middleware chọn ngôn ngữ
+- [ ] `messages/vi.json` và `messages/en.json`; **bóc 41 chuỗi tiếng Việt đang hardcode** ở `app/` và `components/` ra file messages
+- [ ] Nút đổi ngôn ngữ trên header, nhớ lựa chọn bằng cookie
+- [ ] `formatVnd` và `formatDate` nhận locale; tiền vẫn là VND ở cả hai ngôn ngữ
+- [ ] `ProductCard`: ảnh tỉ lệ cố định, tên sản phẩm, giá, **chọn size ngay trên thẻ** + nút thêm nhanh vào giỏ; biến thể hết hàng thì size đó bị khoá
+- [ ] `ProductGrid`: 2 cột mobile, 3 tablet, 4 desktop
+- [ ] `ProductCarousel`: cuộn ngang, có nút trái/phải trên desktop, vuốt trên mobile
+- [ ] `CollectionBanner`: ảnh lớn + tên bộ sưu tập + mô tả ngắn + link, dùng cho khối biên tập trang chủ
+- [ ] `Hero`: ảnh toàn chiều rộng, tiêu đề, nút hành động
+- [ ] `TrustBar`: 4 cam kết (chất lượng · thanh toán · miễn phí ship từ 300.000 ₫ · đổi trả)
+- [ ] Nâng menu desktop thành **mega menu**: mở ra bảng gom theo `group`, có ảnh bộ sưu tập nổi bật
+- [ ] `SizeGuideModal`: bảng quy đổi size, mở được từ thẻ sản phẩm lẫn trang chi tiết
+- [ ] `NewsletterForm` (chỉ giao diện; nơi nhận email để Phase sau quyết)
+- [ ] Footer dựng lại theo trung tâm tin cậy: cam kết · liên hệ · ba cột link · dãy biểu tượng thanh toán
+
+> **Xong khi:** mở một trang demo ghép đủ các thành phần trên, chạy tốt ở 3 breakpoint; `grep` không còn chuỗi tiếng Việt nào trong `app/` và `components/`; đổi sang `/en` thì toàn bộ giao diện sang tiếng Anh.
+
+---
+
 ## Phase 10 — FE Storefront (URL tiếng Anh)
 
 | Route | Nội dung |
@@ -200,12 +333,32 @@ Luồng status hợp lệ:
 | `/categories/[slug]` | Sản phẩm của một category, bộ lọc (drawer trên mobile) |
 | `/gifts` | Category nhóm OCCASION và sản phẩm làm quà |
 | `/products/[slug]` | Gallery, chọn size/màu, báo hết hàng theo biến thể, sản phẩm liên quan |
+| `/collections/[slug]` | Một bộ sưu tập theo chủ đề, có ảnh bìa và mô tả |
 | `/search` | Kết quả tìm kiếm có bộ lọc |
+| `/size-guide`, `/care`, `/shipping`, `/returns`, `/about` | Trang hỗ trợ |
 
-- [ ] Dựng các trang storefront theo bảng trên, filter đồng bộ lên URL
+Trang chủ dựng theo lối biên tập của site tham chiếu, không phải lưới sản phẩm:
+
+```
+hero = bộ sưu tập / mùa đang chạy
+carousel sản phẩm nổi bật
+banner bộ sưu tập A  →  carousel sản phẩm của A
+banner bộ sưu tập B  →  carousel sản phẩm của B
+khối quà tặng theo dịp sắp tới (lấy từ category nhóm OCCASION)
+TrustBar
+NewsletterForm
+```
+
+- [ ] `/` theo bố cục trên; khối nào không có dữ liệu thì ẩn hẳn, không hiện khung rỗng
+- [ ] `/categories/[slug]`: lưới sản phẩm, bộ lọc (giá, size, màu), sắp xếp; mobile là drawer; filter đồng bộ lên URL để chia sẻ được link đã lọc
+- [ ] `/collections/[slug]`: trang bộ sưu tập, có ảnh bìa và mô tả ở đầu
+- [ ] `/gifts`: category nhóm OCCASION, nhóm theo dịp
+- [ ] `/products/[slug]`: gallery, chọn size và màu, khoá biến thể hết hàng, link mở `SizeGuideModal`, thông tin chất liệu và bảo quản, sản phẩm liên quan
+- [ ] `/search`: kết quả có bộ lọc như trang category
+- [ ] Trang hỗ trợ: `/size-guide`, `/care`, `/shipping`, `/returns`, `/about`
+- [ ] `/feedback`: landing page nhận góp ý (`FEEDBACK_URL` trỏ vào đây thay vì form ngoài)
 - [ ] Đổi hết route tiếng Việt cũ (`/qua-tang`, `/san-pham`, `/mua`, `/danh-muc`...) sang tiếng Anh
-- [ ] Server Components + metadata cho SEO
-- [ ] Landing page nhận feedback (`FEEDBACK_URL` trỏ vào đây thay vì form ngoài)
+- [ ] Server Components + metadata cho SEO; ảnh dùng `next/image` với tỉ lệ cố định để không giật layout
 - [ ] Xoá trang giữ chỗ `app/search/page.tsx` và `components/layout/coming-soon.tsx`
 
 > **Xong khi:** không còn route tiếng Việt, chọn biến thể hết hàng thì nút thêm giỏ bị khoá.
@@ -218,6 +371,7 @@ Luồng status hợp lệ:
 - [ ] `/checkout`: họ tên, email, SĐT (bắt buộc, kiểm tra định dạng), tỉnh/thành, xã/phường, địa chỉ, ghi chú — đều nhập tự do; hiện phí ship và tổng tiền
 - [ ] Báo lỗi rõ khi hết hàng lúc đặt, chặn bấm gửi hai lần
 - [ ] `/order-success/[code]`: mã đơn, tóm tắt, lời nhắn "chúng tôi sẽ gọi xác nhận trong X giờ", xoá giỏ
+- [ ] `/orders/track`: tra cứu đơn bằng **mã đơn + số điện thoại**, hiện trạng thái và các mốc đã qua. Khách không có tài khoản nên đây là đường duy nhất để họ tự xem đơn; cần endpoint công khai ở Phase 7 (chỉ trả dữ liệu khi mã và SĐT khớp, có throttle chống dò mã)
 
 > **Xong khi:** đặt được đơn end-to-end không cần tài khoản, email xác nhận về Mailpit.
 
@@ -255,7 +409,8 @@ nguyên đường dẫn.
 - [ ] Middleware chặn toàn bộ `/admin/*` khi chưa đăng nhập, hết hạn token thì đá về login
 - [ ] Tách route group: chuyển trang storefront vào `app/(storefront)/` với layout chứa Header + Footer, `app/layout.tsx` gốc chỉ còn `<html>`, font và `<Toaster />`
 - [ ] Khung admin ở `app/admin/layout.tsx`: sidebar + topbar, **không có header/footer của storefront**, có nút đăng xuất
-- [ ] Quản lý category: danh sách gom theo `group`, tạo / sửa / bật tắt / đổi `sortOrder`
+- [ ] Mọi form có trường dịch được đều có **tab vi / en**; bỏ trống tiếng Anh thì lưu được, hiển thị rơi về tiếng Việt
+- [ ] Quản lý category: danh sách gom theo `group` (gồm cả `COLLECTION`), tạo / sửa / bật tắt / đổi `sortOrder`
 - [ ] Quản lý size và màu (`variant_options`): thêm / sửa / ẩn, màu có chọn mã hex
 - [ ] Quản lý product: danh sách có tìm kiếm và phân trang, tạo / sửa, gán nhiều category, thêm biến thể (size + màu + giá + tồn kho)
 
@@ -547,6 +702,10 @@ export const emailLogs = sqliteTable(
 | 11 | Tài liệu chung | `CLAUDE.md` và `PLAN.md` nằm ở gốc monorepo |
 | 12 | Dockerfile | Một image chứa cả hai app, build thẳng từ monorepo |
 | 13 | Chỗ đặt trang admin | Route `/admin/*` **trong chính app `apps/frontend`**, không tách workspace riêng |
+| 14 | Chuẩn giao diện | Học flow và UX của [bonnemaison.fr](https://www.bonnemaison.fr/); nghiệp vụ theo thói quen Việt Nam |
+| 15 | Đa ngôn ngữ | `vi` (mặc định, không tiền tố) + `en` (`/en/...`), `next-intl`, làm từ đầu |
+| 16 | Lưu bản dịch trong DB | Cột JSON `{vi, en}`, không tách cột hay bảng riêng. `slug` một bản dùng chung |
+| 17 | Lỗi backend | Là i18n key, dịch theo `Accept-Language`; key phải có đủ ở cả hai file ngôn ngữ |
 
 Ảnh hưởng tới schema Phase 2:
 

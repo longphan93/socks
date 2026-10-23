@@ -152,6 +152,22 @@ Chưa áp dụng (khác stack, ghi lại để khỏi tranh luận lại): `Base
 tiếng. Response envelope giữ `{ data, message, meta }` theo PLAN, không dùng
 `{ success, data, timestamp }` của bên kia.
 
+## Đa ngôn ngữ
+
+`vi` mặc định (URL không tiền tố), `en` ở `/en/...`. Làm từ đầu, không bổ sung sau.
+
+- **Không hardcode chuỗi giao diện**, kể cả tiếng Việt — tất cả qua `t('key')`,
+  message ở `apps/frontend/messages/{vi,en}.json`.
+- **Lỗi backend là i18n key, không phải câu**:
+  `throw new BadRequestException('order.out_of_stock')`. Key ở
+  `apps/backend/src/i18n/{vi,en}/<domain>.json`, thiếu một bên là client nhận
+  chuỗi key thô, nên thêm key phải thêm đủ hai file.
+- **Nội dung DB dịch được lưu cột JSON `{vi, en}`** (tên, mô tả, nhãn size/màu).
+  `slug` chỉ một bản dùng chung. Thiếu bản dịch thì rơi về tiếng Việt.
+- API **giải ngôn ngữ trước khi trả**: client nhận chuỗi, không nhận object
+  `{vi, en}`.
+- Tiền luôn VND ở cả hai ngôn ngữ, không quy đổi tiền tệ.
+
 ## Định dạng response API
 
 Mọi response, kể cả lỗi, đều có hình dạng:
