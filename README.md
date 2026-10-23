@@ -1,8 +1,10 @@
 # Frontend
 
-Next.js 16 App Router, React 19, Tailwind CSS v4. Xem
-[../README.md](../README.md) để chạy local, [../CLAUDE.md](../CLAUDE.md) cho
-quy ước code.
+Next.js 16 App Router, React 19, Tailwind CSS v4.
+
+Quy ước code và kế hoạch triển khai nằm ở `CLAUDE.md` và `PLAN.md` trong repo
+backend: https://github.com/longphan93/socks-backend — clone cạnh thư mục này
+(`socks/backend`, `socks/frontend`) rồi đọc `../backend/CLAUDE.md`.
 
 ## Cấu trúc
 
