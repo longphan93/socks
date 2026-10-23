@@ -17,8 +17,8 @@ nó cần — để có trang quản trị dùng được sớm thay vì đợi 
 | 6 | Phase 4 — BE Catalog | xong |
 | 7 | Phase 12a — FE Admin: đăng nhập + quản lý catalog | xong · **admin dùng được** |
 | 8 | Phase 5 — BE Upload ảnh | xong |
-| 9 | **Phase 12b — FE Admin: upload ảnh sản phẩm** | ← tiếp theo |
-| 10 | Phase 6 — BE Guest checkout | |
+| 9 | Phase 12b — FE Admin: upload ảnh sản phẩm | xong |
+| 10 | **Phase 6 — BE Guest checkout** | ← tiếp theo |
 | 11 | Phase 7 — BE Quản lý đơn hàng | |
 | 12 | Phase 8 — BE Email | |
 | 13 | **Phase 12c — FE Admin: đơn hàng, dashboard, cài đặt** | |
@@ -562,11 +562,24 @@ nguyên đường dẫn.
 
 Làm ngay sau Phase 5.
 
-- [ ] Khung upload trong trang sửa product: xin presigned URL rồi `PUT` thẳng lên R2, có thanh tiến trình
-- [ ] Gắn ảnh đã upload vào product, kéo thả đổi thứ tự, xoá ảnh
-- [ ] Báo lỗi rõ khi sai định dạng hoặc quá 5 MB, kiểm trước khi gọi API
+- [x] Khung upload trong trang sửa product: xin presigned URL rồi `PUT` thẳng lên R2, có thanh tiến trình
+- [x] Gắn ảnh đã upload vào product, kéo thả đổi thứ tự, xoá ảnh
+- [x] Báo lỗi rõ khi sai định dạng hoặc quá 5 MB, kiểm trước khi gọi API
 
-> **Xong khi:** ảnh đi thẳng từ trình duyệt lên R2 (tab Network không thấy file nào đi qua backend) và hiện trong trang sửa product sau khi tải lại.
+> **Xong khi:** ảnh đi thẳng từ trình duyệt lên R2 (tab Network không thấy file nào đi qua backend) và hiện trong trang sửa product sau khi tải lại. ✅
+>
+> "Không đi qua backend" chứng minh được mà không cần mở tab Network: URL ký
+> trỏ tới `127.0.0.1:4566` còn API ở `127.0.0.1:4000`, và `grep` toàn bộ
+> backend không có `FileInterceptor`, `@UploadedFile` hay `multipart` — không
+> có chỗ nào nhận file cả.
+>
+> **Chưa bấm thử trên trình duyệt**: thanh tiến trình và kéo thả đổi thứ tự mới
+> chỉ chạy qua đường API (Phase 5 đã kiểm presign → PUT → gắn → đảo thứ tự →
+> xoá). Click-through để Phase 13 làm bằng Playwright.
+>
+> Ảnh trong admin dùng `unoptimized`: bộ tối ưu của Next từ chối host loopback
+> của LocalStack. Storefront ở Phase 10 sẽ cấu hình tối ưu với domain ảnh thật;
+> `remotePatterns` đã khai sẵn R2 và `NEXT_PUBLIC_MEDIA_HOST`.
 
 ---
 

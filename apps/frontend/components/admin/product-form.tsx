@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { cn } from '@/lib/cn';
 import { formatVnd } from '@/lib/format';
+import { ProductImageManager } from './product-image-manager';
 import { TranslatedInput } from './translated-input';
 
 export interface ProductFormState {
@@ -155,6 +156,14 @@ export function ProductForm({ form, onChange, categories, options }: ProductForm
           })}
         </div>
       </div>
+
+      {form.id ? (
+        <ProductImageManager productId={form.id} />
+      ) : (
+        <p className="rounded-xl border border-dashed border-border px-4 py-5 text-center text-sm text-ink-muted">
+          Lưu sản phẩm trước rồi mới thêm được ảnh — ảnh cần gắn vào một sản phẩm đã tồn tại.
+        </p>
+      )}
 
       <div>
         <div className="mb-2 flex flex-wrap items-end justify-between gap-2">

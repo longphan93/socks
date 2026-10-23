@@ -163,3 +163,12 @@ export interface TranslatedField {
   vi: string;
   en?: string;
 }
+
+/** Ảnh sản phẩm ở trang quản trị: kèm khoá object và thứ tự. */
+export interface ProductImageDetail {
+  id: string;
+  url: string;
+  r2Key: string;
+  alt: string | null;
+  sortOrder: number;
+}
