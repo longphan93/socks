@@ -9,6 +9,7 @@ import { Env, validateEnv } from './config/env.js';
 import { DatabaseModule } from './database/database.module.js';
 import { HealthModule } from './health/health.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { CatalogModule } from './modules/catalog/catalog.module.js';
 import { AdminJwtGuard } from './modules/auth/guards/admin-jwt.guard.js';
 
 @Module({
@@ -22,15 +23,11 @@ import { AdminJwtGuard } from './modules/auth/guards/admin-jwt.guard.js';
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService<Env, true>) => ({
+        // Chỉ một throttler: throttler đặt tên trong cấu hình toàn cục sẽ áp
+        // cho MỌI route, nên không dùng được để giới hạn riêng một route.
+        // Giới hạn đăng nhập nằm ở LoginAttemptService.
         throttlers: [
-          // Mức chung cho mọi route.
-          { name: 'default', ttl: 60_000, limit: 120 },
-          // Mức riêng cho đăng nhập, gắn bằng @Throttle({ login: {} }).
-          {
-            name: 'login',
-            ttl: config.get('LOGIN_THROTTLE_TTL_MS', { infer: true }),
-            limit: config.get('LOGIN_THROTTLE_LIMIT', { infer: true }),
-          },
+          { ttl: 60_000, limit: config.get('THROTTLE_LIMIT', { infer: true }) },
         ],
       }),
     }),
@@ -38,6 +35,7 @@ import { AdminJwtGuard } from './modules/auth/guards/admin-jwt.guard.js';
     CacheModule,
     DatabaseModule,
     AuthModule,
+    CatalogModule,
     HealthModule,
   ],
   providers: [

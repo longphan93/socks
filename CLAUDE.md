@@ -181,8 +181,11 @@ Mặc định đóng để route admin thêm về sau không thể quên bảo v
 trên route storefront thì lỗi lộ ra ngay lần gọi đầu; quên guard trên route
 admin thì không ai biết cho tới khi bị lạm dụng.
 
-Giới hạn tần suất: throttler `default` cho mọi route, `login` riêng cho đăng
-nhập (`@Throttle({ login: {} })`).
+Giới hạn tần suất: **một** throttler chung cho mọi route (`THROTTLE_LIMIT`).
+Đừng thêm throttler đặt tên trong cấu hình toàn cục để giới hạn riêng một route
+— throttler đặt tên áp cho **mọi** route, `@Throttle({ ten: {} })` chỉ ghi đè
+cấu hình chứ không bật/tắt theo route. Giới hạn đăng nhập nằm ở
+`LoginAttemptService`, đếm theo IP và chỉ đếm lần **sai**.
 
 ## Định dạng response API
 

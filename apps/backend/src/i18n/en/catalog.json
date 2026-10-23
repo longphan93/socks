@@ -1,0 +1,7 @@
+{
+  "category_not_found": "Category not found",
+  "product_not_found": "Product not found",
+  "slug_taken": "That URL is already in use. Please pick another one.",
+  "invalid_slug": "A URL may only contain lowercase letters, numbers and hyphens",
+  "product_needs_variant": "A product needs at least one variant"
+}

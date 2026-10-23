@@ -14,8 +14,8 @@ nó cần — để có trang quản trị dùng được sớm thay vì đợi 
 | 3 | Phase 9 — FE nền tảng | xong |
 | 4 | Phase 2 — Database schema MVP | xong |
 | 5 | Phase 3 — BE Admin auth | xong |
-| 6 | **Phase 4 — BE Catalog** | ← tiếp theo |
-| 7 | **Phase 12a — FE Admin: đăng nhập + quản lý catalog** | **admin dùng được từ đây** |
+| 6 | Phase 4 — BE Catalog | xong |
+| 7 | **Phase 12a — FE Admin: đăng nhập + quản lý catalog** | ← tiếp theo · **admin dùng được từ đây** |
 | 8 | Phase 5 — BE Upload ảnh | |
 | 9 | **Phase 12b — FE Admin: upload ảnh sản phẩm** | |
 | 10 | Phase 6 — BE Guest checkout | |
@@ -311,14 +311,24 @@ Phác thảo schema ở [phụ lục cuối file](#phụ-lục--phác-thảo-dri
 
 ## Phase 4 — BE Catalog
 
-- [ ] Danh sách sản phẩm: lọc theo nhiều category slug, khoảng giá, size, màu; tìm theo tên; sắp xếp; phân trang
-- [ ] Chi tiết sản phẩm theo slug, kèm biến thể, ảnh, danh sách category
-- [ ] Mọi response có nội dung dịch được đều **giải theo `Accept-Language`** rồi mới trả: client nhận chuỗi đã chọn ngôn ngữ, không nhận cả object `{vi, en}`. Thiếu bản dịch thì rơi về tiếng Việt
-- [ ] API category gom theo group, category nổi bật, sản phẩm theo mùa hiện tại (category SEASON ứng với tháng hiện tại)
-- [ ] Admin CRUD category và product; gán/bỏ nhiều category cho một product
-- [ ] Xoá category chỉ xoá liên kết, không xoá product
+- [x] Danh sách sản phẩm: lọc theo nhiều category slug, khoảng giá, size, màu; tìm theo tên; sắp xếp; phân trang
+- [x] Chi tiết sản phẩm theo slug, kèm biến thể, ảnh, danh sách category
+- [x] Mọi response có nội dung dịch được đều **giải theo `Accept-Language`** rồi mới trả: client nhận chuỗi đã chọn ngôn ngữ, không nhận cả object `{vi, en}`. Thiếu bản dịch thì rơi về tiếng Việt
+- [x] API category gom theo group, category nổi bật, sản phẩm theo mùa hiện tại (category SEASON ứng với tháng hiện tại)
+- [x] Admin CRUD category và product; gán/bỏ nhiều category cho một product
+- [x] Xoá category chỉ xoá liên kết, không xoá product
 
-> **Xong khi:** lọc kết hợp nhiều category trả đúng, có unit test cho service lọc.
+> **Xong khi:** lọc kết hợp nhiều category trả đúng, có unit test cho service lọc. ✅
+>
+> Kiểm trên dữ liệu thật: `winter` 6 sản phẩm, `unisex` 10, **`winter` + `unisex`
+> ra 2** — đúng phép giao, không phải hợp. Size và màu thì ngược lại, nhiều giá
+> trị là phép hợp (`39-42` 15, thêm `s-m` thành 18). Lọc giá, tìm tên, sắp xếp,
+> phân trang, i18n vi/en đều đúng. Xoá category gỡ liên kết mà sản phẩm vẫn còn.
+>
+> Ba lỗi phát hiện khi chạy thật, đã sửa: throttler đặt tên trong cấu hình toàn
+> cục áp cho **mọi** route nên cả API bị giới hạn 5 request/5 phút; gateway trả
+> mảng rỗng cho `get` không tìm thấy làm Drizzle vỡ ở cột JSON và trả 500 thay
+> vì 404; lỗi validate từng trường chưa được dịch.
 
 ---
 

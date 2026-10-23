@@ -47,8 +47,8 @@ export class D1GatewayClient {
    * D1 không có transaction tương tác; batch là cách duy nhất để nhiều câu lệnh
    * chạy nguyên tử. Không bao giờ thử lại vì batch gần như luôn có lệnh ghi.
    */
-  async batch(queries: SqlQuery[]): Promise<{ rows: unknown[] }[]> {
-    const response = await this.send<{ results: { rows: unknown[] }[] }>(
+  async batch(queries: SqlQuery[]): Promise<{ rows: unknown }[]> {
+    const response = await this.send<{ results: { rows: unknown }[] }>(
       '/batch',
       { queries },
       false,

@@ -139,6 +139,15 @@ describe('D1GatewayClient', () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
+  it('trả null khi get không tìm thấy, không phải mảng rỗng', async () => {
+    // Mảng rỗng là truthy nên drizzle sẽ coi như có dòng và vỡ ở cột JSON.
+    fetchMock.mockImplementation(async () => okResponse({ rows: null }));
+
+    await expect(
+      client.query({ sql: 'select * from products where slug = ?', params: ['x'], method: 'get' }),
+    ).resolves.toEqual({ rows: null });
+  });
+
   it('mở gói results của batch thành mảng rows', async () => {
     fetchMock.mockResolvedValue(
       okResponse({ results: [{ rows: [[1]] }, { rows: [] }] }),

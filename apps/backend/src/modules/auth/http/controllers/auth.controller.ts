@@ -1,5 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
+import { Body, Controller, Get, HttpCode, HttpStatus, Ip, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentAdmin } from '../../decorators/current-admin.decorator.js';
 import { Public } from '../../decorators/public.decorator.js';
@@ -16,11 +15,10 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  // Giới hạn riêng cho login: chặn dò mật khẩu mà không ảnh hưởng route khác.
-  @Throttle({ login: {} })
   @ApiOperation({ summary: 'Đăng nhập admin, trả access token' })
-  login(@Body() dto: LoginDto): Promise<LoginResponse> {
-    return this.authService.login(dto);
+  // Chặn dò mật khẩu bằng cách đếm lần SAI theo IP, xem LoginAttemptService.
+  login(@Body() dto: LoginDto, @Ip() ip: string): Promise<LoginResponse> {
+    return this.authService.login(dto, ip);
   }
 
   @Get('me')

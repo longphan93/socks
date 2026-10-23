@@ -33,6 +33,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const locale = this.i18n.resolveLocale(request?.headers?.['accept-language']);
     const { message, errors } = describe(exception, status);
 
+    // Lỗi từng trường cũng là i18n key; dịch luôn để giao diện gắn thẳng vào
+    // ô nhập, khỏi phải giữ bản sao của cùng bộ key bên frontend.
+    const translatedErrors = Array.isArray(errors)
+      ? errors.map((error) => this.i18n.translate(String(error), locale))
+      : errors;
+
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
       this.logger.error(message, exception instanceof Error ? exception.stack : undefined);
     }
@@ -46,7 +52,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         statusCode: status,
         path: httpAdapter.getRequestUrl(request),
         timestamp: new Date().toISOString(),
-        ...(errors ? { errors } : {}),
+        ...(translatedErrors ? { errors: translatedErrors } : {}),
       },
     };
 

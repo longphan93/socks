@@ -1,0 +1,7 @@
+{
+  "category_not_found": "Không tìm thấy danh mục",
+  "product_not_found": "Không tìm thấy sản phẩm",
+  "slug_taken": "Đường dẫn này đã được dùng, vui lòng chọn đường dẫn khác",
+  "invalid_slug": "Đường dẫn chỉ gồm chữ thường, số và dấu gạch ngang",
+  "product_needs_variant": "Sản phẩm phải có ít nhất một biến thể"
+}

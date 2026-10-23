@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
 import { Env } from '../../../config/env.js';
 import { AdminUserRepository } from '../repositories/admin-user.repository.js';
+import { LoginAttemptService } from './login-attempt.service.js';
 import { AuthenticatedAdminInterface, JwtPayloadInterface } from '../interfaces/index.js';
 import { LoginDto } from '../http/dto/index.js';
 import { AdminProfileResponse, LoginResponse } from '../http/responses/index.js';
@@ -14,9 +15,12 @@ export class AuthService {
     private readonly admins: AdminUserRepository,
     private readonly jwt: JwtService,
     private readonly config: ConfigService<Env, true>,
+    private readonly attempts: LoginAttemptService,
   ) {}
 
-  async login(dto: LoginDto): Promise<LoginResponse> {
+  async login(dto: LoginDto, ip: string): Promise<LoginResponse> {
+    this.attempts.assertNotLocked(ip);
+
     const admin = await this.admins.findByEmail(dto.email);
 
     // So sánh mật khẩu kể cả khi không có admin nào khớp email, để thời gian
@@ -27,8 +31,12 @@ export class AuthService {
     );
 
     if (!admin || !passwordMatches) {
+      this.attempts.recordFailure(ip);
+
       throw new UnauthorizedException('auth.invalid_credentials');
     }
+
+    this.attempts.clear(ip);
 
     const payload: JwtPayloadInterface = { sub: admin.id, email: admin.email };
 

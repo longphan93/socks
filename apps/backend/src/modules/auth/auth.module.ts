@@ -5,6 +5,7 @@ import { Env } from '../../config/env.js';
 import { AuthController } from './http/controllers/auth.controller.js';
 import { AdminUserRepository } from './repositories/admin-user.repository.js';
 import { AuthService } from './services/auth.service.js';
+import { LoginAttemptService } from './services/login-attempt.service.js';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { AuthService } from './services/auth.service.js';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, AdminUserRepository],
+  providers: [AuthService, LoginAttemptService, AdminUserRepository],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

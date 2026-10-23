@@ -90,6 +90,17 @@ export class Env {
   @IsNotEmpty()
   JWT_EXPIRES_IN = '7d';
 
+  /**
+   * Giới hạn request mỗi phút cho mỗi IP.
+   *
+   * Để rộng tay vì nhà mạng trong nước hay NAT nhiều thuê bao chung một IP:
+   * đặt chặt quá thì cả một vùng bị chặn vì vài người dùng.
+   */
+  @toInt()
+  @IsInt()
+  @Min(10)
+  THROTTLE_LIMIT = 600;
+
   /** Số lần đăng nhập sai cho phép trong một cửa sổ thời gian. */
   @toInt()
   @IsInt()

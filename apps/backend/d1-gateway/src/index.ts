@@ -89,13 +89,17 @@ async function handleQuery(
 
   // `.raw()` trả mảng giá trị theo đúng thứ tự cột — đúng thứ sqlite-proxy cần.
   const rows = await statement.raw();
-  return { rows: method === 'get' ? (rows[0] ?? []) : rows };
+
+  // `get` không tìm thấy phải trả null, KHÔNG phải mảng rỗng: drizzle kiểm
+  // `if (!row) return undefined`, mà mảng rỗng là truthy nên nó sẽ map tiếp và
+  // vỡ ở cột JSON với "undefined is not valid JSON".
+  return { rows: method === 'get' ? (rows[0] ?? null) : rows };
 }
 
 async function handleBatch(
   env: Env,
   body: BatchRequest,
-): Promise<{ results: { rows: unknown[] }[] }> {
+): Promise<{ results: { rows: unknown }[] }> {
   if (!Array.isArray(body?.queries) || body.queries.length === 0) {
     throw new GatewayError(
       400,

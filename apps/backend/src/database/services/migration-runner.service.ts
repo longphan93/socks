@@ -116,7 +116,7 @@ export class MigrationRunnerService {
     });
 
     // Gateway trả rows dạng mảng giá trị, cột duy nhất nằm ở vị trí 0.
-    return new Set((rows as unknown[][]).map((row) => String(row[0])));
+    return new Set(((rows ?? []) as unknown[][]).map((row) => String(row[0])));
   }
 
   /**
