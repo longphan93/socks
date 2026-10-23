@@ -37,7 +37,13 @@ Tick `[x]` ngay sau khi task chạy được và đã chạy lint/test.
 
 > **Xong khi:** khởi động BE với DB trống thì tự tạo đủ bảng, `/api/v1/health` trả OK.
 >
-> Đường ống migration đã chạy được (đã thử với một migration nháp rồi xoá). Phần "tạo đủ bảng" hoàn tất khi Phase 2 khai báo schema. `/api/v1/health` trả `{"database":"ok"}` khi gateway sống.
+> Trạng thái: 9/9 task xong và đã chạy thử. `/api/v1/health` trả
+> `{"database":"ok"}`, Swagger 200, migrate trên DB trống chạy sạch và tạo bảng
+> ghi sổ `migrations`.
+>
+> **Nửa còn lại của tiêu chí chưa đạt:** "tự tạo đủ bảng" cần có file migration,
+> mà `src/database/migrations/` hiện mới có README. Bảng nghiệp vụ do Phase 2
+> khai báo — tiêu chí này chỉ đạt khi Phase 2 xong.
 
 ---
 
@@ -480,33 +486,25 @@ export const emailLogs = sqliteTable(
    cài từ `vendor/longphan93-nestjs-migration-1.0.1.tgz` — bản vá build tại chỗ.
    Khi 1.0.2 lên GitHub Packages thì xoá `vendor/` và đổi dependency trong
    `apps/backend/package.json` về `^1.0.2`. Chi tiết 4 điểm cần vá: `vendor/README.md`.
+
 Không còn điểm nào chặn Phase 2.
 
 ### Về `@longphan93/nestjs-migration`
 
-Đã đọc source (commit `8d092ed`). Thư viện là lớp bọc API fluent
-(`createTable`, `column().string().nullable()`) lên trên QueryRunner của TypeORM
-hoặc Sequelize. Ba trở ngại khi dùng cho dự án này:
+Thư viện là lớp bọc API fluent (`createTable`, `column().string().nullable()`)
+lên trên QueryRunner của TypeORM hoặc Sequelize. Đã áp dụng cho dự án này ở
+Phase 1, nhưng phải tự làm thêm ba phần vì D1 chỉ truy cập được qua HTTPS:
 
-1. **Không có executor nào chạy được trên D1.** `TypeOrmExecutor` cần một
-   `QueryRunner` của TypeORM, `SequelizeExecutor` cần instance Sequelize. D1 chỉ
-   truy cập được qua HTTPS tới Worker — không socket TCP, không file SQLite —
-   nên cả hai ORM đều không kết nối tới được.
-2. **Package chưa cài được.** `package.json` thiếu `main`, `types`, `exports`,
-   `files`; 7 file import theo đường tuyệt đối `src/...` (chỉ phân giải được nhờ
-   `baseUrl` lúc biên dịch, chạy từ `node_modules` sẽ ném lỗi không tìm thấy
-   module).
-3. **Tầng driver chỉ map kiểu cột.** `SqliteDriver.mapColumnType()` chỉ đổi
-   `ColumnTypeEnum` sang tên kiểu SQLite; phần sinh câu lệnh DDL thật là do
-   TypeORM/Sequelize làm. Thư viện cũng không có runner theo dõi migration nào đã
-   chạy — phần đó vốn do ORM lo.
+1. **`D1GatewayExecutor`** (`apps/backend/src/database/executors/`) — thư viện
+   không có executor nào nối tới D1 được, nên executor này sinh thẳng DDL SQLite
+   từ DSL và đẩy qua gateway. Nó gom câu lệnh thay vì chạy ngay, vì SQLite không
+   thêm được khoá chính / khoá ngoại sau `CREATE TABLE` trong khi
+   `CreateTableBuilder` gọi `createTable()` trước rồi mới chạy action.
+2. **`MigrationRunnerService`** — thư viện không có runner theo dõi migration nào
+   đã chạy (phần đó vốn do ORM lo). Runner ghi sổ vào bảng `migrations`, và gửi
+   mọi câu lệnh của một migration cùng dòng ghi sổ trong một D1 batch nguyên tử.
+3. **Bản vá cho chính package** — xem `vendor/README.md`.
 
-Muốn dùng thì phải: sửa package cho cài được, tự viết `D1GatewayExecutor`
-implement 8 phương thức của `BaseExecutor` kèm toàn bộ phần sinh DDL SQLite, và
-viết thêm runner ghi nhận migration đã chạy. Thêm nữa, SQLite hạn chế `ALTER
-TABLE` rất nặng (không thêm được khoá ngoại hay khoá chính sau khi tạo bảng),
-nên `updateTable`, `createForeignKey`, `createPrimary` sẽ không chạy đúng trên
-D1 dù có executor.
-
-Hiện Phase 1 đang dùng drizzle-kit sinh SQL + `wrangler d1 migrations apply`,
-đã chạy thông từ đầu đến cuối. Đề xuất giữ nguyên cho dự án này.
+Giới hạn còn lại: `updateTable`, `createForeignKey`, `createPrimary` trên bảng
+đã tồn tại sẽ bị executor chặn kèm thông báo, vì SQLite không làm được. Đổi khoá
+của bảng đã có dữ liệu thì phải tạo bảng mới rồi chép sang.

@@ -1,8 +1,10 @@
 /**
- * Drizzle schema của MVP.
+ * Drizzle schema của MVP — khai báo để truy vấn có type.
  *
- * Phase 2 sẽ khai báo category, product, product_variant, product_image,
- * product_category, order, order_item, admin_user, email_log tại đây rồi chạy
- * `npm run db:generate` để sinh migration.
+ * Đây KHÔNG phải nguồn sinh migration: bảng thật do các file trong
+ * `../migrations/` tạo ra, viết tay, mỗi bảng một file. Phase 2 khai báo
+ * category, product, product_variant, product_image, product_category,
+ * variant_option, setting, order, order_item, order_status_history,
+ * shipment, admin_user, email_log tại đây cho khớp với migration.
  */
 export {};
