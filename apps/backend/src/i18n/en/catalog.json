@@ -3,5 +3,10 @@
   "product_not_found": "Product not found",
   "slug_taken": "That URL is already in use. Please pick another one.",
   "invalid_slug": "A URL may only contain lowercase letters, numbers and hyphens",
-  "product_needs_variant": "A product needs at least one variant"
+  "product_needs_variant": "A product needs at least one variant",
+  "option_not_found": "Size or colour not found",
+  "option_value_taken": "That value already exists in this group",
+  "invalid_option_value": "A value may only contain lowercase letters, numbers and hyphens",
+  "invalid_hex_color": "A colour code must look like #RRGGBB",
+  "hex_color_only_for_color": "Only colours carry a colour code, sizes do not"
 }

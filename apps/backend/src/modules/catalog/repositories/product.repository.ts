@@ -22,7 +22,12 @@ export class ProductRepository {
     params: ProductFilterParamsInterface,
   ): Promise<PaginatedInterface<typeof products.$inferSelect>> {
     const { page, limit } = params;
-    const where = and(eq(products.isActive, true), ...this.buildFilters(params));
+    // Storefront chỉ thấy hàng đang bán; trang quản trị phải thấy cả hàng đã
+    // tắt, nếu không admin bật lại bằng cách nào.
+    const where = and(
+      params.includeInactive ? undefined : eq(products.isActive, true),
+      ...this.buildFilters(params),
+    );
 
     const [{ total }] = await this.db
       .select({ total: sql<number>`count(*)` })

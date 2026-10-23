@@ -55,10 +55,14 @@ export class ProductService {
     };
   }
 
-  async findBySlug(slug: string, locale: LocaleEnum): Promise<ProductDetailResponse> {
+  async findBySlug(
+    slug: string,
+    locale: LocaleEnum,
+    allowInactive = false,
+  ): Promise<ProductDetailResponse> {
     const product = await this.repository.findBySlug(slug);
 
-    if (!product || !product.isActive) {
+    if (!product || (!product.isActive && !allowInactive)) {
       throw new NotFoundException('catalog.product_not_found');
     }
 

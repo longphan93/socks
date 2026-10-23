@@ -1,13 +1,15 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { MemoryCacheService } from '../../../common/cache/memory-cache.service.js';
 import { LocaleEnum } from '../../../common/enums/index.js';
+import { PaginatedInterface } from '../../../common/interfaces/index.js';
+import { ProductFilterParamsInterface } from '../interfaces/index.js';
 import { CATALOG_CACHE_PREFIX } from '../constants/index.js';
 import { CategoryRepository } from '../repositories/category.repository.js';
 import { ProductRepository } from '../repositories/product.repository.js';
 import { ProductVariantRepository } from '../repositories/product-variant.repository.js';
 import { ProductService } from './product.service.js';
 import { CreateProductDto, ProductVariantDto, UpdateProductDto } from '../http/dto/index.js';
-import { ProductDetailResponse } from '../http/responses/index.js';
+import { ProductDetailResponse, ProductSummaryResponse } from '../http/responses/index.js';
 
 @Injectable()
 export class AdminProductService {
@@ -18,6 +20,24 @@ export class AdminProductService {
     private readonly productService: ProductService,
     private readonly cache: MemoryCacheService,
   ) {}
+
+  /** Danh sách cho trang quản trị: gồm cả sản phẩm đã tắt. */
+  list(
+    params: ProductFilterParamsInterface,
+    locale: LocaleEnum,
+  ): Promise<PaginatedInterface<ProductSummaryResponse>> {
+    return this.productService.list({ ...params, includeInactive: true }, locale);
+  }
+
+  async findById(id: string, locale: LocaleEnum): Promise<ProductDetailResponse> {
+    const product = await this.products.findById(id);
+
+    if (!product) {
+      throw new NotFoundException('catalog.product_not_found');
+    }
+
+    return this.productService.findBySlug(product.slug, locale, true);
+  }
 
   async create(dto: CreateProductDto, locale: LocaleEnum): Promise<ProductDetailResponse> {
     if (await this.products.findBySlug(dto.slug)) {
@@ -42,7 +62,7 @@ export class AdminProductService {
 
     this.cache.invalidate(CATALOG_CACHE_PREFIX);
 
-    return this.productService.findBySlug(dto.slug, locale);
+    return this.productService.findBySlug(dto.slug, locale, true);
   }
 
   async update(
@@ -83,7 +103,7 @@ export class AdminProductService {
 
     this.cache.invalidate(CATALOG_CACHE_PREFIX);
 
-    return this.productService.findBySlug(product.slug, locale);
+    return this.productService.findBySlug(product.slug, locale, true);
   }
 
   /** Ngừng bán: không xoá để đơn hàng cũ còn đọc được sản phẩm. */

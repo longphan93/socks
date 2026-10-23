@@ -3,5 +3,10 @@
   "product_not_found": "Không tìm thấy sản phẩm",
   "slug_taken": "Đường dẫn này đã được dùng, vui lòng chọn đường dẫn khác",
   "invalid_slug": "Đường dẫn chỉ gồm chữ thường, số và dấu gạch ngang",
-  "product_needs_variant": "Sản phẩm phải có ít nhất một biến thể"
+  "product_needs_variant": "Sản phẩm phải có ít nhất một biến thể",
+  "option_not_found": "Không tìm thấy size hoặc màu",
+  "option_value_taken": "Giá trị này đã tồn tại trong nhóm",
+  "invalid_option_value": "Giá trị chỉ gồm chữ thường, số và dấu gạch ngang",
+  "invalid_hex_color": "Mã màu phải có dạng #RRGGBB",
+  "hex_color_only_for_color": "Chỉ màu mới có mã màu, size thì không"
 }

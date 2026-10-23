@@ -11,6 +11,8 @@ export interface ProductFilterParamsInterface {
   sizes?: string[];
   colors?: string[];
   featuredOnly?: boolean;
+  /** Trang quản trị đặt true để thấy cả sản phẩm đã tắt. */
+  includeInactive?: boolean;
   sort: ProductSortEnum;
   page: number;
   limit: number;
