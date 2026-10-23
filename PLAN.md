@@ -129,8 +129,25 @@ cho khách tới xem.
 | Giá từ **25.000 ₫ tới ~300.000 ₫** (tất lẻ → quần tất) | Phí ship phẳng 20k là **sai**: với đôi 25k thì phí bằng 80% giá hàng. Phải có nhiều hình thức giao, và đẩy mạnh mua combo |
 | Mua lẻ hoặc mua set tuỳ ý | Không làm SKU combo riêng; giỏ tính theo số lượng, có gợi ý "mua thêm X để miễn ship" |
 | **Bốn hình thức nhận hàng**: ghé nhận · hoả tốc · trong ngày nội thành Đà Nẵng · COD toàn quốc | Không phải một mức phí. Cần bảng `shipping_methods` admin tự quản lý |
+| **Hoả tốc 20–50k tuỳ quãng đường**, chỉ nội thành bán kính ~15km; ngoại thành gửi GHTK/GHN | Phí hoả tốc là **khoảng**, không phải số cố định. Chốt chính xác lúc nhân viên gọi xác nhận |
+| **Giảm giá theo số lượng, tính trên tổng bill**, MVP do admin quyết tay | Đơn cần trường `discount` admin sửa được. Máy tự tính bậc giá để phase sau |
+| Miễn phí ship từ **300.000 ₫ cho mọi hình thức** | |
 | Khách chốt đơn qua **Facebook → Zalo → gọi điện**, muốn thêm Instagram | Nút Zalo phải nổi nhất, không giấu trong footer. Mobile có thanh liên hệ cố định |
 | Khách tới web **từ link trong post và tin nhắn**, không từ Google | Giữ nhịp trang đẹp của site tham chiếu nhưng đưa hàng sản phẩm lên trước chuỗi banner |
+
+### Tổng đơn chốt ở bước gọi xác nhận, không phải lúc bấm đặt
+
+Hai thứ khiến con số lúc checkout chỉ là tạm tính: phí hoả tốc thay đổi theo
+quãng đường, và giảm giá mua nhiều do admin quyết tay. Mô hình này hợp với cách
+shop đang làm — gọi xác nhận từng đơn — nhưng phải nói thẳng với khách, không để
+họ thấy một số rồi bị báo số khác.
+
+- Checkout hiện phí hoả tốc dạng **khoảng** ("20.000 – 50.000 ₫, báo chính xác
+  khi gọi xác nhận"), các hình thức khác hiện số cố định.
+- Đơn lưu `shippingFee` và `discount` **admin sửa được** sau khi tạo; mỗi lần
+  sửa ghi vào lịch sử đơn (ai sửa, lúc nào, từ bao nhiêu sang bao nhiêu).
+- Email xác nhận gửi ngay sau khi đặt ghi rõ "tổng tạm tính"; số cuối cùng nằm
+  ở cuộc gọi.
 
 ### Lấy gì từ Bonne Maison
 
@@ -248,11 +265,12 @@ So với Bonne Maison: vẫn giữ hero ảnh lớn và khối bộ sưu tập, 
 - [ ] `ProductCategory`: bảng nối many-to-many tường minh (productId, categoryId, sortOrder)
 - [ ] `Product` (name, description là cột JSON `{vi, en}`), `ProductVariant` (size, màu, SKU, giá, tồn kho), `ProductImage` (r2Key, url, alt JSON `{vi, en}`, sortOrder)
 - [ ] `VariantOption`: danh sách size và màu do admin quản lý (kind, value, label JSON `{vi, en}`, hexColor, sortOrder) — biến thể tham chiếu vào đây để bộ lọc Phase 4 không bị tách giá trị
-- [ ] `ShippingMethod`: code, name JSON `{vi, en}`, description JSON, fee, freeFrom (ngưỡng miễn phí riêng từng hình thức, null là không có), areaNote (vd "nội thành Đà Nẵng"), estimatedTime, isPickup, sortOrder, isActive — bốn bản ghi seed: ghé nhận · hoả tốc Đà Nẵng · trong ngày Đà Nẵng · COD toàn quốc
+- [ ] `ShippingMethod`: code, name JSON `{vi, en}`, description JSON, **fee** (mức tối thiểu / mức hiển thị), **feeMax** (null nếu phí cố định; có giá trị thì giao diện hiện dạng khoảng và ghi "chốt khi xác nhận"), freeFrom, areaNote, estimatedTime, isPickup, sortOrder, isActive — seed 4 bản ghi, `freeFrom = 300000` cho cả bốn
+- [ ] `Order` thêm: `shippingMethodId`, `shippingFee` (admin sửa được), **`discount`** (số nguyên VND, mặc định 0, admin nhập tay) và `discountNote`; `total = subtotal - discount + shippingFee`
 - [ ] `Setting`: key/value cho kênh liên hệ (`contact.zalo`, `contact.phone`, `contact.facebook`, `contact.instagram`) và các tham số admin sửa được mà không cần deploy
-- [ ] `Order`: code (`SK-YYYYMMDD-XXXX`), customerName, email, phone, province, ward, street, note, subtotal, shippingFee, total, status, internalNote
+- [ ] `Order`: code (`SK-YYYYMMDD-XXXX`), customerName, email, phone, province, ward, street, note, locale, subtotal, discount, shippingFee, total, status, internalNote
 - [ ] `OrderItem`: snapshot tên, biến thể, đơn giá, số lượng
-- [ ] `OrderStatusHistory`: fromStatus, toStatus, note, changedBy, createdAt
+- [ ] `OrderStatusHistory`: fromStatus, toStatus, note, changedBy, createdAt — dùng chung để ghi cả **thay đổi phí ship và giảm giá** (field, giá trị cũ, giá trị mới)
 - [ ] `Shipment` (chuẩn bị cho đơn vị vận chuyển): orderId, provider (`MANUAL` mặc định), trackingCode, status, fee, rawPayload
 - [ ] `EmailLog`: orderId, type (`ORDER_CONFIRMATION`/`FEEDBACK_REQUEST`/`ADMIN_NEW_ORDER`), status, attempts, error; **unique (orderId, type)** để chống gửi trùng
 - [ ] Quy ước: tiền `integer` (VND), status/group lưu `text` + hằng số TS; index cho slug, sku, status, createdAt. Mỗi bảng một file migration
@@ -303,7 +321,9 @@ Phác thảo schema ở [phụ lục cuối file](#phụ-lục--phác-thảo-dri
 
 - [ ] `POST /orders` public: items (variantId, quantity), thông tin khách (họ tên, email, SĐT bắt buộc, kiểm tra định dạng SĐT Việt Nam), địa chỉ giao hàng, ghi chú
 - [ ] Khách **chọn hình thức nhận hàng** từ `shipping_methods`; đơn lưu `shippingMethodId` và phí đã chốt
-- [ ] Tính lại giá từ DB (không tin giá client gửi); phí ship lấy từ hình thức khách chọn, về 0 khi tổng hàng vượt `freeFrom` của hình thức đó
+- [ ] Tính lại giá từ DB (không tin giá client gửi); phí ship lấy từ hình thức khách chọn, về 0 khi tổng hàng vượt `freeFrom` (300.000 ₫ cho cả bốn hình thức)
+- [ ] Hình thức có `feeMax` thì đơn lưu mức `fee` tối thiểu và **đánh dấu phí tạm tính**; admin chốt lại ở Phase 7
+- [ ] `discount` luôn bằng 0 lúc tạo đơn — MVP không tự tính bậc giá, admin nhập tay sau
 - [ ] Hình thức `isPickup` thì không bắt nhập địa chỉ giao
 - [ ] Trừ kho bằng một D1 batch (atomic), bảng biến thể có ràng buộc `CHECK (stock >= 0)` để thiếu hàng thì cả batch rollback; snapshot giá vào OrderItem, sinh mã đơn, status `PENDING_CONFIRMATION`
 - [ ] `POST /cart/validate`: kiểm tra giá và tồn kho mới nhất cho giỏ lưu ở trình duyệt
@@ -319,6 +339,7 @@ Phác thảo schema ở [phụ lục cuối file](#phụ-lục--phác-thảo-dri
 
 - [ ] Admin: danh sách đơn lọc theo status, ngày, tìm theo mã/SĐT/email; chi tiết đơn; ghi chú nội bộ
 - [ ] `OrderStatusService.transition()` là nơi duy nhất đổi status, kiểm tra luồng hợp lệ, ghi `OrderStatusHistory`
+- [ ] **Sửa phí ship và nhập giảm giá** trên đơn, tính lại `total`; chỉ cho sửa khi đơn chưa COMPLETED/CANCELLED, mỗi lần sửa ghi vào lịch sử đơn
 - [ ] Huỷ đơn thì hoàn kho
 - [ ] Phát event `order.status_changed` (`@nestjs/event-emitter`) để email và tích hợp sau này lắng nghe
 - [ ] Interface `DeliveryProvider` (createShipment, cancelShipment, getTracking, handleWebhook) với `ManualDeliveryProvider` mặc định
@@ -430,6 +451,7 @@ sản phẩm và giá ngay, không phải lối biên tập của site tham chi�
 
 - [ ] `/cart`: sửa số lượng, xoá, gọi `/cart/validate` để cập nhật giá và tồn kho mới nhất (thay trang giữ chỗ hiện tại)
 - [ ] `/checkout`: **chọn hình thức nhận hàng trước**, phí ship đổi theo lựa chọn; ghé nhận thì ẩn phần địa chỉ
+- [ ] Hình thức hoả tốc hiện phí dạng **khoảng** kèm câu "chốt chính xác khi nhân viên gọi xác nhận", và ghi rõ chỉ áp dụng nội thành Đà Nẵng bán kính ~15km; ngoại thành chuyển sang gợi ý COD toàn quốc
 - [ ] Họ tên, SĐT (bắt buộc, kiểm tra định dạng VN), email, tỉnh/thành, xã/phường, địa chỉ, ghi chú — đều nhập tự do; hiện phí ship và tổng tiền
 - [ ] Báo lỗi rõ khi hết hàng lúc đặt, chặn bấm gửi hai lần
 - [ ] `/order-success/[code]`: mã đơn, tóm tắt, lời nhắn "chúng tôi sẽ gọi xác nhận trong X giờ", xoá giỏ
@@ -499,6 +521,7 @@ Làm ngay sau Phase 8, khi đã có đơn hàng thật và email chạy được
 - [ ] Dashboard: số đơn theo từng status, doanh thu đơn COMPLETED theo ngày
 - [ ] Đơn hàng: danh sách + lọc theo status và ngày, tìm theo mã / SĐT / email
 - [ ] Chi tiết đơn: thông tin khách, các dòng hàng, tổng tiền, ghi chú nội bộ sửa được
+- [ ] **Ô sửa phí ship và nhập giảm giá** ngay trên trang chi tiết đơn, hiện lại tổng sau khi sửa
 - [ ] Nút đổi status **chỉ hiện các bước hợp lệ** theo bảng luồng ở Phase 7; huỷ đơn phải xác nhận
 - [ ] Timeline lịch sử đổi status: ai đổi, lúc nào
 - [ ] Trạng thái email đã gửi cho từng đơn (xác nhận, feedback, báo team)
@@ -524,8 +547,10 @@ Làm ngay sau Phase 8, khi đã có đơn hàng thật và email chạy được
 
 ## Sau MVP
 
-Để dành cho bản sau: thanh toán online (VNPay/MoMo), tài khoản khách, đánh giá
-sản phẩm, mã giảm giá, hộp quà tự chọn, tích hợp GHN/GHTK qua `DeliveryProvider`.
+Để dành cho bản sau: **tự động giảm giá theo bậc số lượng** (MVP admin nhập tay),
+**nhúng feed Instagram** (MVP chỉ gắn link), thanh toán online (VNPay/MoMo), tài
+khoản khách, đánh giá sản phẩm, mã giảm giá, hộp quà tự chọn, tích hợp GHN/GHTK
+qua `DeliveryProvider`.
 
 ---
 
@@ -756,7 +781,10 @@ export const emailLogs = sqliteTable(
 | 3 | Size, màu, thuộc tính tất | Admin tự quyết, không hard-code trong source |
 | 4 | SKU | Tự sinh từ slug + size + màu, cho phép admin sửa đè |
 | 5 | Mã đơn | `SK-YYYYMMDD-XXXX` với 4 ký tự ngẫu nhiên + unique, trùng thì sinh lại |
-| 6 | Phí ship | ~~Một mức phẳng 20.000 ₫~~ → **bảng `shipping_methods` admin tự quản lý**: ghé nhận · hoả tốc · trong ngày Đà Nẵng · COD toàn quốc. Mỗi hình thức có phí và ngưỡng miễn phí riêng |
+| 6 | Phí ship | ~~Một mức phẳng 20.000 ₫~~ → **bảng `shipping_methods` admin tự quản lý**: ghé nhận · hoả tốc · trong ngày Đà Nẵng · COD toàn quốc |
+| 6b | Phí hoả tốc | 20.000 – 50.000 ₫ tuỳ quãng đường, chỉ nội thành ~15km. Hiện dạng khoảng, chốt khi gọi xác nhận. Ngoại thành không nhận hoả tốc, chuyển GHTK/GHN |
+| 6c | Miễn phí ship | Từ 300.000 ₫, áp cho **mọi** hình thức |
+| 6d | Giảm giá mua nhiều | Tính trên tổng bill. MVP **admin nhập tay** vào đơn; tự động theo bậc số lượng để phase sau |
 | 7 | Feedback | Làm landing page trên site, không dùng form ngoài |
 | 8 | Repo | ~~Giữ hai repo riêng~~ → **gộp thành monorepo npm workspaces** (`apps/backend`, `apps/frontend`), repo `socks-frontend` đã xoá |
 | 9 | Địa chỉ | Hai cấp: tỉnh/thành → xã/phường. Bỏ cấp quận/huyện |
@@ -770,6 +798,7 @@ export const emailLogs = sqliteTable(
 | 17 | Lỗi backend | Là i18n key, dịch theo `Accept-Language`; key phải có đủ ở cả hai file ngôn ngữ |
 | 18 | Kênh liên hệ | Zalo là chính, kèm Facebook, Instagram, gọi điện. Lưu trong `settings`, admin sửa được |
 | 19 | Mặt bằng | Bán online hoàn toàn. Có ghé nhận nhưng **không có cửa hàng trưng bày** — footer không ghi giờ mở cửa |
+| 20 | Instagram | Trước mắt chỉ gắn link; nhúng feed ảnh để sau |
 
 Ảnh hưởng tới schema Phase 2:
 
