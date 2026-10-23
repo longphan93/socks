@@ -118,23 +118,85 @@ Phase 9 dựng xong trước khi có quyết định này nên **41 chuỗi ti�
 hardcode** trong `app/`, `components/`. Phase 9b phải bóc hết ra file messages —
 đây là nợ kỹ thuật có thật, không phải việc phát sinh.
 
-## Tính năng theo văn hoá Việt Nam
+## Shop thật và điều nó quyết định
 
-Giao diện và luồng học theo site tham chiếu, nhưng nghiệp vụ thì theo thói quen
-mua hàng trong nước:
+Shop đang bán trên Facebook ([Tất Vớ - Quà Tặng Đà Nẵng](https://www.facebook.com/tatvoquatangdanang)),
+chuyển sang web để chuyên nghiệp hơn. **Bán online hoàn toàn**, không có cửa hàng
+cho khách tới xem.
 
-- **Dịp tặng quà là một trục phân loại chính** (`OCCASION`): Tết, Valentine,
-  8/3, 20/10, Noel, sinh nhật. Site tham chiếu không có trục này.
-- **Số điện thoại là danh tính của đơn hàng**, không phải email. Tra cứu đơn
-  bằng mã + SĐT; team gọi xác nhận trước khi giao.
+| Thực tế | Kéo theo |
+| --- | --- |
+| Giá từ **25.000 ₫ tới ~300.000 ₫** (tất lẻ → quần tất) | Phí ship phẳng 20k là **sai**: với đôi 25k thì phí bằng 80% giá hàng. Phải có nhiều hình thức giao, và đẩy mạnh mua combo |
+| Mua lẻ hoặc mua set tuỳ ý | Không làm SKU combo riêng; giỏ tính theo số lượng, có gợi ý "mua thêm X để miễn ship" |
+| **Bốn hình thức nhận hàng**: ghé nhận · hoả tốc · trong ngày nội thành Đà Nẵng · COD toàn quốc | Không phải một mức phí. Cần bảng `shipping_methods` admin tự quản lý |
+| Khách chốt đơn qua **Facebook → Zalo → gọi điện**, muốn thêm Instagram | Nút Zalo phải nổi nhất, không giấu trong footer. Mobile có thanh liên hệ cố định |
+| Khách tới web **từ link trong post và tin nhắn**, không từ Google | Giữ nhịp trang đẹp của site tham chiếu nhưng đưa hàng sản phẩm lên trước chuỗi banner |
+
+### Lấy gì từ Bonne Maison
+
+Lấy **chất lượng và cách hành xử của giao diện**, không sao chép bố cục.
+
+**Chất lượng trình bày.** Khoảng trắng rộng, lưới chặt, ảnh sản phẩm là nhân vật
+chính chứ không phải khung viền và nhãn giảm giá. Typography kỷ luật: ít cỡ chữ,
+ít màu, không chữ nhấp nháy. Đây mới là thứ tạo cảm giác "web chuyên nghiệp" —
+nó đến từ sự tiết chế, không đến từ việc thêm hiệu ứng.
+
+**Cách tương tác.** Chọn size ngay trên thẻ sản phẩm · mega menu có ảnh bộ sưu
+tập · carousel cuộn mượt · giỏ hàng mở dạng drawer thay vì chuyển trang · modal
+bảng size gọi được từ nhiều chỗ · header dính khi cuộn · ảnh tỉ lệ cố định để
+không giật layout.
+
+**Nhịp trang.** Hero ảnh lớn → sản phẩm → khối chủ đề → cam kết → footer. Mỗi
+khối làm một việc, không nhồi.
+
+**Footer là trung tâm tin cậy** và **trang hỗ trợ tách riêng** (bảng size, bảo
+quản, giao hàng, đổi trả, tra cứu đơn).
+
+### Điều chỉnh cho hoàn cảnh của shop
+
+Giữ nguyên tinh thần trên, chỉnh bốn chỗ — vì khách tới từ link Facebook/Zalo
+chứ không phải từ Google, và tới với câu hỏi "giá bao nhiêu, ship thế nào":
+
+| Bonne Maison | Ở đây |
+| --- | --- |
+| Hero chiếm trọn màn hình, kể chuyện bộ sưu tập | Hero vẫn là ảnh lớn đẹp nhưng **thấp hơn** (~70% màn hình) và có nút rõ ràng, để hàng sản phẩm đầu tiên ló lên khi cuộn nhẹ |
+| 3–4 khối banner biên tập xen carousel | **1–2 khối** là đủ, đặt sau hàng sản phẩm bán chạy |
+| Chỉ có form liên hệ và email | Thêm **Zalo, gọi điện, Facebook, Instagram**; mobile có thanh cố định đáy màn hình |
+| Đăng ký nhận tin qua email | Người Việt theo dõi page và Zalo nhiều hơn — ưu tiên nút theo dõi, email là phụ |
+
+Thêm tín hiệu mà site Pháp không cần: **ship trong ngày Đà Nẵng · COD toàn quốc
+· miễn ship từ 300k** ở thanh thông báo, và thanh tiến trình "mua thêm X để miễn
+phí giao hàng" trong giỏ.
+
+### Bố cục trang chủ
+
+```
+thanh thông báo: ship trong ngày Đà Nẵng · COD toàn quốc · miễn ship từ 300k
+header dính: logo · mega menu · tìm kiếm · giỏ (mở drawer)
+hero ảnh lớn ~70vh: một câu + nút "Xem sản phẩm"
+lưới sản phẩm bán chạy            ← có giá, chọn size ngay trên thẻ
+khối quà tặng theo dịp sắp tới
+banner bộ sưu tập  →  carousel sản phẩm của bộ đó
+"Vì sao mua ở đây": ship trong ngày DN · COD toàn quốc · đổi trả · gói quà
+TrustBar + kênh liên hệ (Zalo · Facebook · Instagram · gọi)
+footer
+[mobile] thanh cố định đáy: Zalo · Gọi · Giỏ hàng
+```
+
+So với Bonne Maison: vẫn giữ hero ảnh lớn và khối bộ sưu tập, chỉ **đổi thứ tự**
+để hàng sản phẩm lên trước chuỗi banner, và **giảm số banner** từ 3–4 xuống 1–2.
+
+### Nghiệp vụ theo thói quen trong nước
+
+- **Dịp tặng quà là trục phân loại chính** (`OCCASION`): Tết, Valentine, 8/3,
+  20/10, 20/11, Noel, sinh nhật.
+- **Số điện thoại là danh tính của đơn**, không phải email. Tra cứu đơn bằng mã
+  + số điện thoại; team gọi xác nhận trước khi giao.
 - **COD mặc định**, không thanh toán online trong MVP.
-- **Zalo là kênh liên hệ chính** bên cạnh điện thoại — đưa vào footer và trang
-  liên hệ, đứng trước email.
-- **Địa chỉ hai cấp** tỉnh/thành → xã/phường theo cải cách 2025.
-- **Gói quà và thiệp viết tay miễn phí** nêu rõ ở trang sản phẩm thuộc nhóm
-  `OCCASION`, không giấu trong phần mô tả.
-- Mốc miễn phí ship **300.000 ₫** hiện ở thanh thông báo và trong giỏ hàng
-  ("mua thêm X để được miễn phí giao hàng").
+- **Zalo là kênh chốt đơn chính** — nút Zalo ở header, trang sản phẩm, thanh cố
+  định trên mobile; không chỉ nằm trong footer.
+- **Gói quà và thiệp viết tay miễn phí** nêu rõ ở trang sản phẩm nhóm `OCCASION`.
+- Địa chỉ hai cấp tỉnh/thành → xã/phường theo cải cách 2025.
 
 ---
 
@@ -186,14 +248,15 @@ mua hàng trong nước:
 - [ ] `ProductCategory`: bảng nối many-to-many tường minh (productId, categoryId, sortOrder)
 - [ ] `Product` (name, description là cột JSON `{vi, en}`), `ProductVariant` (size, màu, SKU, giá, tồn kho), `ProductImage` (r2Key, url, alt JSON `{vi, en}`, sortOrder)
 - [ ] `VariantOption`: danh sách size và màu do admin quản lý (kind, value, label JSON `{vi, en}`, hexColor, sortOrder) — biến thể tham chiếu vào đây để bộ lọc Phase 4 không bị tách giá trị
-- [ ] `Setting`: key/value cho phí ship và các tham số admin sửa được mà không cần deploy
+- [ ] `ShippingMethod`: code, name JSON `{vi, en}`, description JSON, fee, freeFrom (ngưỡng miễn phí riêng từng hình thức, null là không có), areaNote (vd "nội thành Đà Nẵng"), estimatedTime, isPickup, sortOrder, isActive — bốn bản ghi seed: ghé nhận · hoả tốc Đà Nẵng · trong ngày Đà Nẵng · COD toàn quốc
+- [ ] `Setting`: key/value cho kênh liên hệ (`contact.zalo`, `contact.phone`, `contact.facebook`, `contact.instagram`) và các tham số admin sửa được mà không cần deploy
 - [ ] `Order`: code (`SK-YYYYMMDD-XXXX`), customerName, email, phone, province, ward, street, note, subtotal, shippingFee, total, status, internalNote
 - [ ] `OrderItem`: snapshot tên, biến thể, đơn giá, số lượng
 - [ ] `OrderStatusHistory`: fromStatus, toStatus, note, changedBy, createdAt
 - [ ] `Shipment` (chuẩn bị cho đơn vị vận chuyển): orderId, provider (`MANUAL` mặc định), trackingCode, status, fee, rawPayload
 - [ ] `EmailLog`: orderId, type (`ORDER_CONFIRMATION`/`FEEDBACK_REQUEST`/`ADMIN_NEW_ORDER`), status, attempts, error; **unique (orderId, type)** để chống gửi trùng
 - [ ] Quy ước: tiền `integer` (VND), status/group lưu `text` + hằng số TS; index cho slug, sku, status, createdAt. Mỗi bảng một file migration
-- [ ] Seed: category đủ 4 nhóm (5 mùa là category nhóm SEASON), ~30 sản phẩm gán nhiều category, 1 admin từ env, size/màu mặc định, `shipping.fee = 20000`, `shipping.free_from = 300000`
+- [ ] Seed: category đủ 4 nhóm (5 mùa là category nhóm SEASON), ~30 sản phẩm gán nhiều category, 1 admin từ env, size/màu mặc định, 4 hình thức giao hàng, kênh liên hệ
 
 > **Xong khi:** migrate + seed chạy sạch, không còn tham chiếu nào tới model đã xoá (`grep` sạch, build pass).
 
@@ -239,7 +302,9 @@ Phác thảo schema ở [phụ lục cuối file](#phụ-lục--phác-thảo-dri
 ## Phase 6 — BE Guest checkout
 
 - [ ] `POST /orders` public: items (variantId, quantity), thông tin khách (họ tên, email, SĐT bắt buộc, kiểm tra định dạng SĐT Việt Nam), địa chỉ giao hàng, ghi chú
-- [ ] Tính lại giá từ DB (không tin giá client gửi), phí ship lấy từ `settings` (`shipping.fee`, mặc định 20.000 ₫), miễn phí khi vượt `shipping.free_from` nếu có đặt
+- [ ] Khách **chọn hình thức nhận hàng** từ `shipping_methods`; đơn lưu `shippingMethodId` và phí đã chốt
+- [ ] Tính lại giá từ DB (không tin giá client gửi); phí ship lấy từ hình thức khách chọn, về 0 khi tổng hàng vượt `freeFrom` của hình thức đó
+- [ ] Hình thức `isPickup` thì không bắt nhập địa chỉ giao
 - [ ] Trừ kho bằng một D1 batch (atomic), bảng biến thể có ràng buộc `CHECK (stock >= 0)` để thiếu hàng thì cả batch rollback; snapshot giá vào OrderItem, sinh mã đơn, status `PENDING_CONFIRMATION`
 - [ ] `POST /cart/validate`: kiểm tra giá và tồn kho mới nhất cho giỏ lưu ở trình duyệt
 - [ ] Lưu `locale` của khách lúc đặt đơn, để email và trang tra cứu dùng đúng ngôn ngữ
@@ -313,12 +378,16 @@ không tự chế một kiểu.
 - [ ] `ProductCard`: ảnh tỉ lệ cố định, tên sản phẩm, giá, **chọn size ngay trên thẻ** + nút thêm nhanh vào giỏ; biến thể hết hàng thì size đó bị khoá
 - [ ] `ProductGrid`: 2 cột mobile, 3 tablet, 4 desktop
 - [ ] `ProductCarousel`: cuộn ngang, có nút trái/phải trên desktop, vuốt trên mobile
+- [ ] `CartDrawer`: thêm vào giỏ thì mở drawer bên phải, không chuyển trang
+- [ ] Header dính khi cuộn, thu gọn chiều cao sau khi cuộn qua hero
 - [ ] `CollectionBanner`: ảnh lớn + tên bộ sưu tập + mô tả ngắn + link, dùng cho khối biên tập trang chủ
 - [ ] `Hero`: ảnh toàn chiều rộng, tiêu đề, nút hành động
-- [ ] `TrustBar`: 4 cam kết (chất lượng · thanh toán · miễn phí ship từ 300.000 ₫ · đổi trả)
+- [ ] `TrustBar`: ship trong ngày Đà Nẵng · COD toàn quốc · đổi trả · gói quà miễn phí
+- [ ] `ContactChannels`: Zalo · Facebook · Instagram · gọi điện, lấy từ `settings`
+- [ ] `MobileActionBar`: thanh cố định đáy màn hình trên mobile — Zalo · Gọi · Giỏ hàng
+- [ ] `FreeShippingProgress`: thanh "mua thêm X để được miễn phí giao hàng", dùng trong giỏ và trang sản phẩm
 - [ ] Nâng menu desktop thành **mega menu**: mở ra bảng gom theo `group`, có ảnh bộ sưu tập nổi bật
 - [ ] `SizeGuideModal`: bảng quy đổi size, mở được từ thẻ sản phẩm lẫn trang chi tiết
-- [ ] `NewsletterForm` (chỉ giao diện; nơi nhận email để Phase sau quyết)
 - [ ] Footer dựng lại theo trung tâm tin cậy: cam kết · liên hệ · ba cột link · dãy biểu tượng thanh toán
 
 > **Xong khi:** mở một trang demo ghép đủ các thành phần trên, chạy tốt ở 3 breakpoint; `grep` không còn chuỗi tiếng Việt nào trong `app/` và `components/`; đổi sang `/en` thì toàn bộ giao diện sang tiếng Anh.
@@ -337,19 +406,11 @@ không tự chế một kiểu.
 | `/search` | Kết quả tìm kiếm có bộ lọc |
 | `/size-guide`, `/care`, `/shipping`, `/returns`, `/about` | Trang hỗ trợ |
 
-Trang chủ dựng theo lối biên tập của site tham chiếu, không phải lưới sản phẩm:
+Trang chủ theo bố cục ở mục **Shop thật và điều nó quyết định** — ưu tiên thấy
+sản phẩm và giá ngay, không phải lối biên tập của site tham chiếu.
 
-```
-hero = bộ sưu tập / mùa đang chạy
-carousel sản phẩm nổi bật
-banner bộ sưu tập A  →  carousel sản phẩm của A
-banner bộ sưu tập B  →  carousel sản phẩm của B
-khối quà tặng theo dịp sắp tới (lấy từ category nhóm OCCASION)
-TrustBar
-NewsletterForm
-```
-
-- [ ] `/` theo bố cục trên; khối nào không có dữ liệu thì ẩn hẳn, không hiện khung rỗng
+- [ ] `/` theo bố cục đó; khối nào không có dữ liệu thì ẩn hẳn, không hiện khung rỗng
+- [ ] `MobileActionBar` hiện trên mọi trang storefront ở khổ mobile
 - [ ] `/categories/[slug]`: lưới sản phẩm, bộ lọc (giá, size, màu), sắp xếp; mobile là drawer; filter đồng bộ lên URL để chia sẻ được link đã lọc
 - [ ] `/collections/[slug]`: trang bộ sưu tập, có ảnh bìa và mô tả ở đầu
 - [ ] `/gifts`: category nhóm OCCASION, nhóm theo dịp
@@ -368,7 +429,8 @@ NewsletterForm
 ## Phase 11 — FE Giỏ hàng và Guest checkout
 
 - [ ] `/cart`: sửa số lượng, xoá, gọi `/cart/validate` để cập nhật giá và tồn kho mới nhất (thay trang giữ chỗ hiện tại)
-- [ ] `/checkout`: họ tên, email, SĐT (bắt buộc, kiểm tra định dạng), tỉnh/thành, xã/phường, địa chỉ, ghi chú — đều nhập tự do; hiện phí ship và tổng tiền
+- [ ] `/checkout`: **chọn hình thức nhận hàng trước**, phí ship đổi theo lựa chọn; ghé nhận thì ẩn phần địa chỉ
+- [ ] Họ tên, SĐT (bắt buộc, kiểm tra định dạng VN), email, tỉnh/thành, xã/phường, địa chỉ, ghi chú — đều nhập tự do; hiện phí ship và tổng tiền
 - [ ] Báo lỗi rõ khi hết hàng lúc đặt, chặn bấm gửi hai lần
 - [ ] `/order-success/[code]`: mã đơn, tóm tắt, lời nhắn "chúng tôi sẽ gọi xác nhận trong X giờ", xoá giỏ
 - [ ] `/orders/track`: tra cứu đơn bằng **mã đơn + số điện thoại**, hiện trạng thái và các mốc đã qua. Khách không có tài khoản nên đây là đường duy nhất để họ tự xem đơn; cần endpoint công khai ở Phase 7 (chỉ trả dữ liệu khi mã và SĐT khớp, có throttle chống dò mã)
@@ -440,7 +502,7 @@ Làm ngay sau Phase 8, khi đã có đơn hàng thật và email chạy được
 - [ ] Nút đổi status **chỉ hiện các bước hợp lệ** theo bảng luồng ở Phase 7; huỷ đơn phải xác nhận
 - [ ] Timeline lịch sử đổi status: ai đổi, lúc nào
 - [ ] Trạng thái email đã gửi cho từng đơn (xác nhận, feedback, báo team)
-- [ ] Trang cài đặt: sửa `shipping.fee` và `shipping.free_from`
+- [ ] Trang cài đặt: quản lý **hình thức giao hàng** (thêm/sửa/ẩn, phí, ngưỡng miễn phí, thời gian dự kiến) và kênh liên hệ Zalo / Facebook / Instagram / điện thoại
 
 > **Xong khi:** đổi một đơn sang COMPLETED thì khách nhận email feedback trong Mailpit, và giao diện không cho chuyển status sai luồng (ví dụ PENDING_CONFIRMATION thẳng sang SHIPPING).
 
@@ -694,7 +756,7 @@ export const emailLogs = sqliteTable(
 | 3 | Size, màu, thuộc tính tất | Admin tự quyết, không hard-code trong source |
 | 4 | SKU | Tự sinh từ slug + size + màu, cho phép admin sửa đè |
 | 5 | Mã đơn | `SK-YYYYMMDD-XXXX` với 4 ký tự ngẫu nhiên + unique, trùng thì sinh lại |
-| 6 | Phí ship | Một mức phẳng, mặc định 20.000 ₫, admin sửa được trong trang quản trị. Không tính theo khoảng cách |
+| 6 | Phí ship | ~~Một mức phẳng 20.000 ₫~~ → **bảng `shipping_methods` admin tự quản lý**: ghé nhận · hoả tốc · trong ngày Đà Nẵng · COD toàn quốc. Mỗi hình thức có phí và ngưỡng miễn phí riêng |
 | 7 | Feedback | Làm landing page trên site, không dùng form ngoài |
 | 8 | Repo | ~~Giữ hai repo riêng~~ → **gộp thành monorepo npm workspaces** (`apps/backend`, `apps/frontend`), repo `socks-frontend` đã xoá |
 | 9 | Địa chỉ | Hai cấp: tỉnh/thành → xã/phường. Bỏ cấp quận/huyện |
@@ -706,6 +768,8 @@ export const emailLogs = sqliteTable(
 | 15 | Đa ngôn ngữ | `vi` (mặc định, không tiền tố) + `en` (`/en/...`), `next-intl`, làm từ đầu |
 | 16 | Lưu bản dịch trong DB | Cột JSON `{vi, en}`, không tách cột hay bảng riêng. `slug` một bản dùng chung |
 | 17 | Lỗi backend | Là i18n key, dịch theo `Accept-Language`; key phải có đủ ở cả hai file ngôn ngữ |
+| 18 | Kênh liên hệ | Zalo là chính, kèm Facebook, Instagram, gọi điện. Lưu trong `settings`, admin sửa được |
+| 19 | Mặt bằng | Bán online hoàn toàn. Có ghé nhận nhưng **không có cửa hàng trưng bày** — footer không ghi giờ mở cửa |
 
 Ảnh hưởng tới schema Phase 2:
 
