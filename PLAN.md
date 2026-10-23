@@ -480,9 +480,6 @@ export const emailLogs = sqliteTable(
    cài từ `vendor/longphan93-nestjs-migration-1.0.1.tgz` — bản vá build tại chỗ.
    Khi 1.0.2 lên GitHub Packages thì xoá `vendor/` và đổi dependency trong
    `apps/backend/package.json` về `^1.0.2`. Chi tiết 4 điểm cần vá: `vendor/README.md`.
-2. **Tên repo trên GitHub vẫn là `socks-backend`** trong khi nó đã chứa cả hai
-   app. Đổi tên thành `socks` thì `git remote set-url` lại một lần là xong.
-
 Không còn điểm nào chặn Phase 2.
 
 ### Về `@longphan93/nestjs-migration`
