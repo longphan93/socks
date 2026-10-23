@@ -32,9 +32,9 @@ socks/
 
 Lệnh chạy ở root; nhắm vào một app bằng `npm run <script> -w @socks/backend`.
 
-Tài liệu kế hoạch gốc chép thư mục là `apps/backend`, `apps/frontend`. Repo
-thật dùng `backend/`, `frontend/` ở cùng cấp — giữ nguyên, không đổi.
-`d1-gateway` nằm trong `backend/` vì nó dùng chung thư mục `migrations/`.
+`d1-gateway` nằm trong `apps/backend/` vì nó là đường truy cập DB của backend,
+không phải một app riêng. Nó có `package.json` và `tsconfig.json` riêng nhưng
+nằm ngoài glob `apps/*` nên không phải một workspace; deploy bằng wrangler.
 
 ## Stack
 
@@ -51,7 +51,7 @@ thật dùng `backend/`, `frontend/` ở cùng cấp — giữ nguyên, không �
 ## Cách truy cập database
 
 NestJS chạy trên Node trong Docker nên **không có D1 binding**. Mọi truy vấn đi
-qua `backend/d1-gateway` — một Worker nhận `{ sql, params, method }` qua HTTPS,
+qua `apps/backend/d1-gateway` — một Worker nhận `{ sql, params, method }` qua HTTPS,
 xác thực bằng header `x-gateway-secret`, chạy trên binding `DB`.
 
 - ORM là Drizzle với driver `sqlite-proxy`, dùng cho **truy vấn**. Không dùng Prisma.
