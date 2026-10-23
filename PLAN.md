@@ -1,9 +1,34 @@
 # PLAN.md
 
-Làm tuần tự từ Phase 0 đến Phase 13. Chỉ sang phase mới khi đạt dòng **Xong khi**.
-Phase 0–8 là backend, 9–12 là frontend, 13 là hoàn thiện và deploy.
+Chỉ sang phase mới khi đạt dòng **Xong khi**. Tick `[x]` ngay sau khi task chạy
+được và đã chạy lint/test.
 
-Tick `[x]` ngay sau khi task chạy được và đã chạy lint/test.
+Các phase bên dưới xếp theo **số**, nhưng thứ tự **làm** thì theo bảng này.
+Phase 12 (trang admin) đã được tách làm ba lát, mỗi lát ra ngay sau phần backend
+nó cần — để có trang quản trị dùng được sớm thay vì đợi tới cuối dự án.
+
+| # | Phase | Trạng thái |
+| --- | --- | --- |
+| 1 | Phase 0 — Nền tảng chung | xong (còn vài việc trên Cloudflare) |
+| 2 | Phase 1 — BE core và migration | xong |
+| 3 | Phase 9 — FE nền tảng | xong |
+| 4 | **Phase 2 — Database schema MVP** | ← tiếp theo |
+| 5 | Phase 3 — BE Admin auth | |
+| 6 | Phase 4 — BE Catalog | |
+| 7 | **Phase 12a — FE Admin: đăng nhập + quản lý catalog** | **admin dùng được từ đây** |
+| 8 | Phase 5 — BE Upload ảnh | |
+| 9 | **Phase 12b — FE Admin: upload ảnh sản phẩm** | |
+| 10 | Phase 6 — BE Guest checkout | |
+| 11 | Phase 7 — BE Quản lý đơn hàng | |
+| 12 | Phase 8 — BE Email | |
+| 13 | **Phase 12c — FE Admin: đơn hàng, dashboard, cài đặt** | |
+| 14 | Phase 10 — FE Storefront | |
+| 15 | Phase 11 — FE Giỏ hàng và Checkout | |
+| 16 | Phase 13 — Hoàn thiện và Deploy | |
+
+Vì sao admin đi trước storefront: có admin thì nhập được category và sản phẩm
+thật, nên tới lượt dựng storefront đã có dữ liệu thật để nhìn, không phải bịa
+dữ liệu mẫu rồi sửa lại sau.
 
 ---
 
@@ -198,16 +223,46 @@ Luồng status hợp lệ:
 
 ---
 
-## Phase 12 — FE Admin (`/admin`)
+## Phase 12a — FE Admin: đăng nhập và quản lý catalog
 
-- [ ] `/admin/login`, middleware bảo vệ toàn bộ `/admin`
-- [ ] Dashboard: số đơn theo status, doanh thu theo ngày
-- [ ] Trang cài đặt: sửa phí ship và ngưỡng miễn phí; quản lý danh sách size và màu
-- [ ] Quản lý category theo group; quản lý product, biến thể, gán nhiều category
-- [ ] Upload ảnh: lấy presigned URL → PUT thẳng lên R2 có thanh tiến trình → gắn vào product; kéo thả đổi thứ tự
-- [ ] Đơn hàng: danh sách + bộ lọc, chi tiết, nút đổi status chỉ hiện các bước hợp lệ, xác nhận trước khi huỷ, timeline lịch sử, ghi chú nội bộ, trạng thái email đã gửi
+Làm ngay sau Phase 4. Đây là lát cắt đầu tiên khiến trang quản trị dùng được thật.
 
-> **Xong khi:** admin tạo product kèm ảnh và nó hiện ngoài storefront; đổi đơn sang COMPLETED thì khách nhận email feedback.
+- [ ] `/admin/login`: form đăng nhập, lưu JWT, báo lỗi sai mật khẩu rõ ràng
+- [ ] Middleware chặn toàn bộ `/admin/*` khi chưa đăng nhập, hết hạn token thì đá về login
+- [ ] Khung admin: layout riêng (sidebar + topbar), **không dùng header/footer của storefront**, có nút đăng xuất
+- [ ] Quản lý category: danh sách gom theo `group`, tạo / sửa / bật tắt / đổi `sortOrder`
+- [ ] Quản lý size và màu (`variant_options`): thêm / sửa / ẩn, màu có chọn mã hex
+- [ ] Quản lý product: danh sách có tìm kiếm và phân trang, tạo / sửa, gán nhiều category, thêm biến thể (size + màu + giá + tồn kho)
+
+> **Xong khi:** đăng nhập vào `/admin` tạo được category và một product có ít nhất hai biến thể; đăng xuất rồi mở lại `/admin/products` thì bị đá về trang login.
+
+---
+
+## Phase 12b — FE Admin: ảnh sản phẩm
+
+Làm ngay sau Phase 5.
+
+- [ ] Khung upload trong trang sửa product: xin presigned URL rồi `PUT` thẳng lên R2, có thanh tiến trình
+- [ ] Gắn ảnh đã upload vào product, kéo thả đổi thứ tự, xoá ảnh
+- [ ] Báo lỗi rõ khi sai định dạng hoặc quá 5 MB, kiểm trước khi gọi API
+
+> **Xong khi:** ảnh đi thẳng từ trình duyệt lên R2 (tab Network không thấy file nào đi qua backend) và hiện trong trang sửa product sau khi tải lại.
+
+---
+
+## Phase 12c — FE Admin: đơn hàng, dashboard, cài đặt
+
+Làm ngay sau Phase 8, khi đã có đơn hàng thật và email chạy được.
+
+- [ ] Dashboard: số đơn theo từng status, doanh thu đơn COMPLETED theo ngày
+- [ ] Đơn hàng: danh sách + lọc theo status và ngày, tìm theo mã / SĐT / email
+- [ ] Chi tiết đơn: thông tin khách, các dòng hàng, tổng tiền, ghi chú nội bộ sửa được
+- [ ] Nút đổi status **chỉ hiện các bước hợp lệ** theo bảng luồng ở Phase 7; huỷ đơn phải xác nhận
+- [ ] Timeline lịch sử đổi status: ai đổi, lúc nào
+- [ ] Trạng thái email đã gửi cho từng đơn (xác nhận, feedback, báo team)
+- [ ] Trang cài đặt: sửa `shipping.fee` và `shipping.free_from`
+
+> **Xong khi:** đổi một đơn sang COMPLETED thì khách nhận email feedback trong Mailpit, và giao diện không cho chuyển status sai luồng (ví dụ PENDING_CONFIRMATION thẳng sang SHIPPING).
 
 ---
 

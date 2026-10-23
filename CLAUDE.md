@@ -181,7 +181,10 @@ trước khi commit.
 
 ## Cách làm việc theo phase
 
-PLAN.md chia công việc thành 14 phase. Mỗi lần chỉ làm **một** phase:
+PLAN.md chia công việc thành 16 bước. Các phase trong file xếp theo số, nhưng
+**thứ tự làm theo bảng lộ trình ở đầu PLAN.md** — Phase 12 (trang admin) đã
+tách làm 12a / 12b / 12c, mỗi lát đi ngay sau phần backend nó cần. Mỗi lần
+chỉ làm **một** phase:
 
 1. Liệt kê task con trước khi code.
 2. Làm lần lượt, sau mỗi task chạy lint/build/test tới khi pass.
