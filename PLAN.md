@@ -16,8 +16,8 @@ nó cần — để có trang quản trị dùng được sớm thay vì đợi 
 | 5 | Phase 3 — BE Admin auth | xong |
 | 6 | Phase 4 — BE Catalog | xong |
 | 7 | Phase 12a — FE Admin: đăng nhập + quản lý catalog | xong · **admin dùng được** |
-| 8 | **Phase 5 — BE Upload ảnh** | ← tiếp theo |
-| 9 | **Phase 12b — FE Admin: upload ảnh sản phẩm** | |
+| 8 | Phase 5 — BE Upload ảnh | xong |
+| 9 | **Phase 12b — FE Admin: upload ảnh sản phẩm** | ← tiếp theo |
 | 10 | Phase 6 — BE Guest checkout | |
 | 11 | Phase 7 — BE Quản lý đơn hàng | |
 | 12 | Phase 8 — BE Email | |
@@ -220,7 +220,7 @@ So với Bonne Maison: vẫn giữ hero ảnh lớn và khối bộ sưu tập, 
 ## Phase 0 — Nền tảng chung
 
 - [ ] Cloudflare: tạo D1 database `socks-db` (`wrangler d1 create socks-db`), bucket R2 `socks-media`, R2 API token, Cloudflare API token có quyền D1 Edit
-- [ ] Cấu hình CORS cho bucket R2: cho phép `PUT` từ domain FE và localhost
+- [ ] Cấu hình CORS cho bucket R2: cho phép `PUT` từ domain FE và localhost (dev đã có sẵn trong LocalStack qua `npm run dev:infra`)
 - [x] Tạo `backend/d1-gateway` (Worker) với `wrangler.toml` khai báo D1 binding
 - [x] `.env.example` cho BE (gateway, Cloudflare, R2, SMTP, admin seed, feedback) và FE (`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL`)
 - [x] Thêm `.wrangler/` và `.dev.vars` vào `.gitignore`
@@ -334,13 +334,28 @@ Phác thảo schema ở [phụ lục cuối file](#phụ-lục--phác-thảo-dri
 
 ## Phase 5 — BE Upload ảnh bằng presigned URL
 
-- [ ] `POST /admin/uploads/presign` nhận filename, contentType, size → kiểm tra loại (jpeg/png/webp) và dung lượng (≤ 5 MB) → trả `uploadUrl` (PUT, hết hạn 5 phút), `key` (`products/<uuid>.<ext>`), `publicUrl`
-- [ ] Ký kèm `Content-Type` để client không upload sai loại file
-- [ ] `POST /admin/products/:id/images` nhận key: kiểm tra object tồn tại trên R2 (HeadObject) rồi mới tạo `ProductImage`
-- [ ] Sắp xếp lại thứ tự ảnh, xoá ảnh thì xoá cả object trên R2
-- [ ] Job hằng ngày dọn object không gắn với sản phẩm nào sau 24 giờ
+- [x] `POST /admin/uploads/presign` nhận filename, contentType, size → kiểm tra loại (jpeg/png/webp) và dung lượng (≤ 5 MB) → trả `uploadUrl` (PUT, hết hạn 5 phút), `key` (`products/<uuid>.<ext>`), `publicUrl`
+- [x] Ký kèm `Content-Type` để client không upload sai loại file
+- [x] `POST /admin/products/:id/images` nhận key: kiểm tra object tồn tại trên R2 (HeadObject) rồi mới tạo `ProductImage`
+- [x] Sắp xếp lại thứ tự ảnh, xoá ảnh thì xoá cả object trên R2
+- [x] Job hằng ngày dọn object không gắn với sản phẩm nào sau 24 giờ
 
-> **Xong khi:** upload từ trình duyệt thẳng lên R2 thành công, BE không nhận file trực tiếp.
+> **Xong khi:** upload từ trình duyệt thẳng lên R2 thành công, BE không nhận file trực tiếp. ✅ (kiểm trên LocalStack)
+>
+> Đã chạy thật: xin URL ký → `PUT` thẳng lên kho (không qua backend) → đọc lại
+> qua URL công khai → gắn vào sản phẩm → đảo thứ tự → xoá ảnh thì object trên
+> kho cũng biến mất → ảnh hiện ở cả trang chi tiết lẫn lưới sản phẩm. Key bịa bị
+> chặn trước khi ghi DB.
+>
+> **Chưa kiểm được trên R2 thật** vì bucket chưa tạo. LocalStack không xác
+> thực chữ ký (PUT không chữ ký cũng qua), nên hai thứ sau mới chỉ chứng minh
+> được bằng nội dung URL chứ chưa bằng hành vi của kho: chữ ký hết hạn sau 5
+> phút, và `Content-Type` bị ràng buộc (`X-Amz-SignedHeaders=content-type;host`).
+> R2 có kiểm chữ ký nên sẽ ép đúng; chạy `npm run r2:test` sau khi tạo bucket.
+>
+> Một lỗi bắt được khi chạy, sẽ vỡ y hệt trên R2: AWS SDK v3 từ bản 3.729 tự
+> thêm `x-amz-checksum-crc32` vào chữ ký, mà trình duyệt không gửi header đó
+> nên kho từ chối. Phải đặt `requestChecksumCalculation: 'WHEN_REQUIRED'`.
 
 ---
 

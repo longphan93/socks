@@ -22,6 +22,8 @@
     "docker:build": "docker build -t socks:local .",
     "docker:run": "docker run --rm -p 4000:4000 -p 4001:4001 --env-file apps/backend/.env socks:local",
     "db:seed": "npm run db:seed -w @socks/backend",
-    "db:seed:demo": "npm run db:seed:demo -w @socks/backend"
+    "db:seed:demo": "npm run db:seed:demo -w @socks/backend",
+    "dev:infra": "npm run dev:infra -w @socks/backend",
+    "dev:infra:stop": "npm run dev:infra:stop -w @socks/backend"
   }
 }

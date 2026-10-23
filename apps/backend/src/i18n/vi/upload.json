@@ -1,0 +1,8 @@
+{
+  "unsupported_type": "Chỉ nhận ảnh JPEG, PNG hoặc WebP",
+  "file_too_large": "Ảnh không được quá 5 MB",
+  "empty_file": "File rỗng",
+  "storage_not_configured": "Chưa cấu hình kho lưu trữ ảnh",
+  "object_not_found": "Chưa thấy ảnh trên kho, có thể lần tải lên chưa xong",
+  "image_not_found": "Không tìm thấy ảnh"
+}

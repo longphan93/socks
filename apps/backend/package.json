@@ -30,7 +30,9 @@
     "db:migrate": "node dist/migrate",
     "db:migrate:revert": "node dist/migrate revert",
     "db:seed": "node dist/seed",
-    "db:seed:demo": "SEED_DEMO=true node dist/seed"
+    "db:seed:demo": "SEED_DEMO=true node dist/seed",
+    "dev:infra": "docker compose -f docker-compose.dev.yml up -d",
+    "dev:infra:stop": "docker compose -f docker-compose.dev.yml down"
   },
   "dependencies": {
     "@longphan93/nestjs-migration": "file:../../vendor/longphan93-nestjs-migration-1.0.1.tgz",
@@ -39,6 +41,7 @@
     "@nestjs/core": "^12.0.1",
     "@nestjs/jwt": "^12.0.3",
     "@nestjs/platform-express": "^12.0.1",
+    "@nestjs/schedule": "^12.0.2",
     "@nestjs/swagger": "^12.0.3",
     "@nestjs/throttler": "^6.7.1",
     "bcrypt": "^6.0.0",

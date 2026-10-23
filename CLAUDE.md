@@ -43,7 +43,7 @@ nằm ngoài glob `apps/*` nên không phải một workspace; deploy bằng wra
 | Backend | NestJS 12, TypeScript ESM, Drizzle ORM |
 | Database | Cloudflare D1 (SQLite), truy cập qua Worker gateway |
 | Frontend | Next.js 16 App Router, React 19, Tailwind CSS v4, Zustand |
-| Lưu trữ ảnh | Cloudflare R2, upload bằng presigned URL |
+| Lưu trữ ảnh | Cloudflare R2, upload bằng presigned URL (dev: LocalStack ở cổng 4566) |
 | Email | SMTP (dev: Mailpit ở cổng 1025, web UI 8025) |
 | Test | Vitest (`*.spec.ts` unit, `*.e2e-spec.ts` e2e) |
 | Lint | oxlint (BE), ESLint (FE), Prettier cả hai |
@@ -90,7 +90,7 @@ Backend (`-w @socks/backend`):
 | `npm run start:dev` | NestJS watch mode |
 | `npm run build && npm run db:migrate` | Chạy migration chưa áp dụng |
 | `npm run build && npm run db:migrate:revert` | Quay lui migration mới nhất |
-| `npm run mail:dev` | Mailpit qua Docker |
+| `npm run dev:infra` | Mailpit + LocalStack (S3 giả cho ảnh) qua Docker |
 | `npm run r2:test` | Thử presigned upload lên R2 |
 | `npm run typecheck` / `lint` / `test` / `test:e2e` / `build` | |
 

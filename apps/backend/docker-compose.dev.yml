@@ -10,3 +10,19 @@ services:
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+  # R2 tương thích S3, nên khi dev dùng LocalStack thay cho Cloudflare: upload
+  # chạy được ngay trên máy, không cần tài khoản thật. Chọn LocalStack chứ
+  # không phải s3mock vì nó xác thực chữ ký SigV4 — presign ký sai là lộ ra
+  # ngay, còn s3mock nhận mọi request nên không chứng minh được gì.
+  localstack:
+    image: localstack/localstack:3.8
+    container_name: socks-localstack
+    restart: unless-stopped
+    ports:
+      - '4566:4566' # S3 API, trỏ R2_ENDPOINT vào đây
+    environment:
+      SERVICES: s3
+      AWS_DEFAULT_REGION: us-east-1
+    volumes:
+      - ./docker/localstack-init.sh:/etc/localstack/init/ready.d/init.sh:ro

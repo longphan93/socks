@@ -1,0 +1,8 @@
+{
+  "unsupported_type": "Only JPEG, PNG or WebP images are accepted",
+  "file_too_large": "An image may not exceed 5 MB",
+  "empty_file": "The file is empty",
+  "storage_not_configured": "Image storage is not configured",
+  "object_not_found": "The image is not on the storage yet — the upload may not have finished",
+  "image_not_found": "Image not found"
+}

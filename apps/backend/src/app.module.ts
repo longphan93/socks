@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CacheModule } from './common/cache/cache.module.js';
 import { I18nThrottlerGuard } from './common/guards/i18n-throttler.guard.js';
@@ -10,6 +11,7 @@ import { DatabaseModule } from './database/database.module.js';
 import { HealthModule } from './health/health.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { CatalogModule } from './modules/catalog/catalog.module.js';
+import { UploadModule } from './modules/upload/upload.module.js';
 import { AdminJwtGuard } from './modules/auth/guards/admin-jwt.guard.js';
 
 @Module({
@@ -31,10 +33,12 @@ import { AdminJwtGuard } from './modules/auth/guards/admin-jwt.guard.js';
         ],
       }),
     }),
+    ScheduleModule.forRoot(),
     I18nModule,
     CacheModule,
     DatabaseModule,
     AuthModule,
+    UploadModule,
     CatalogModule,
     HealthModule,
   ],
