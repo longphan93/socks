@@ -18,8 +18,8 @@ nó cần — để có trang quản trị dùng được sớm thay vì đợi 
 | 7 | Phase 12a — FE Admin: đăng nhập + quản lý catalog | xong · **admin dùng được** |
 | 8 | Phase 5 — BE Upload ảnh | xong |
 | 9 | Phase 12b — FE Admin: upload ảnh sản phẩm | xong |
-| 10 | **Phase 6 — BE Guest checkout** | ← tiếp theo |
-| 11 | Phase 7 — BE Quản lý đơn hàng | |
+| 10 | Phase 6 — BE Guest checkout | xong |
+| 11 | **Phase 7 — BE Quản lý đơn hàng** | ← tiếp theo |
 | 12 | Phase 8 — BE Email | |
 | 13 | **Phase 12c — FE Admin: đơn hàng, dashboard, cài đặt** | |
 | 14 | **Phase 9b — FE Thành phần storefront + i18n** | |
@@ -361,19 +361,33 @@ Phác thảo schema ở [phụ lục cuối file](#phụ-lục--phác-thảo-dri
 
 ## Phase 6 — BE Guest checkout
 
-- [ ] `POST /orders` public: items (variantId, quantity), thông tin khách (họ tên, email, SĐT bắt buộc, kiểm tra định dạng SĐT Việt Nam), địa chỉ giao hàng, ghi chú
-- [ ] Khách **chọn hình thức nhận hàng** từ `shipping_methods`; đơn lưu `shippingMethodId` và phí đã chốt
-- [ ] Tính lại giá từ DB (không tin giá client gửi); phí ship lấy từ hình thức khách chọn, về 0 khi tổng hàng vượt `freeFrom` (300.000 ₫ cho cả bốn hình thức)
-- [ ] Hình thức có `feeMax` thì đơn lưu mức `fee` tối thiểu và **đánh dấu phí tạm tính**; admin chốt lại ở Phase 7
-- [ ] `discount` luôn bằng 0 lúc tạo đơn — MVP không tự tính bậc giá, admin nhập tay sau
-- [ ] Hình thức `isPickup` thì không bắt nhập địa chỉ giao
-- [ ] Trừ kho bằng một D1 batch (atomic), bảng biến thể có ràng buộc `CHECK (stock >= 0)` để thiếu hàng thì cả batch rollback; snapshot giá vào OrderItem, sinh mã đơn, status `PENDING_CONFIRMATION`
-- [ ] `POST /cart/validate`: kiểm tra giá và tồn kho mới nhất cho giỏ lưu ở trình duyệt
-- [ ] Lưu `locale` của khách lúc đặt đơn, để email và trang tra cứu dùng đúng ngôn ngữ
-- [ ] Chống spam: throttler theo IP, giới hạn số lượng mỗi dòng, trường honeypot
-- [ ] Sau khi commit đơn: ghi `EmailLog` cho email xác nhận gửi khách và email báo đơn mới cho team; gửi lỗi không làm hỏng đơn
+- [x] `POST /orders` public: items (variantId, quantity), thông tin khách (họ tên, email, SĐT bắt buộc, kiểm tra định dạng SĐT Việt Nam), địa chỉ giao hàng, ghi chú
+- [x] Khách **chọn hình thức nhận hàng** từ `shipping_methods`; đơn lưu `shippingMethodId` và phí đã chốt
+- [x] Tính lại giá từ DB (không tin giá client gửi); phí ship lấy từ hình thức khách chọn, về 0 khi tổng hàng vượt `freeFrom` (300.000 ₫ cho cả bốn hình thức)
+- [x] Hình thức có `feeMax` thì đơn lưu mức `fee` tối thiểu và **đánh dấu phí tạm tính**; admin chốt lại ở Phase 7
+- [x] `discount` luôn bằng 0 lúc tạo đơn — MVP không tự tính bậc giá, admin nhập tay sau
+- [x] Hình thức `isPickup` thì không bắt nhập địa chỉ giao
+- [x] Trừ kho bằng một D1 batch (atomic), bảng biến thể có ràng buộc `CHECK (stock >= 0)` để thiếu hàng thì cả batch rollback; snapshot giá vào OrderItem, sinh mã đơn, status `PENDING_CONFIRMATION`
+- [x] `POST /cart/validate`: kiểm tra giá và tồn kho mới nhất cho giỏ lưu ở trình duyệt
+- [x] Lưu `locale` của khách lúc đặt đơn, để email và trang tra cứu dùng đúng ngôn ngữ
+- [x] Chống spam: throttler theo IP, giới hạn số lượng mỗi dòng, trường honeypot
+- [x] Sau khi commit đơn: ghi `EmailLog` cho email xác nhận gửi khách và email báo đơn mới cho team; gửi lỗi không làm hỏng đơn
 
-> **Xong khi:** có test cho hết hàng, giá client bị sửa, và 2 người đặt cùng lúc biến thể cuối cùng.
+> **Xong khi:** có test cho hết hàng, giá client bị sửa, và 2 người đặt cùng lúc biến thể cuối cùng. ✅
+>
+> Ca đua tranh kiểm trên D1 thật chứ không mock: đặt tồn về 1 rồi **bắn 5 đơn
+> song song** — đúng 1 đơn được tạo, 4 đơn còn lại nhận 409 "vừa hết hàng",
+> tồn 1 → 0, `order_items` chỉ có 1 dòng cho biến thể đó. Ràng buộc
+> `CHECK (stock >= 0)` làm trọng tài, cả batch rollback nên không có đơn trừ
+> được một nửa.
+>
+> Giá client không có đường nào gửi lên: DTO chỉ nhận `variantId` + `quantity`,
+> giá luôn đọc từ DB và chụp vào `order_items`.
+>
+> Hai lỗi phát hiện khi chạy: gateway client nuốt lỗi ràng buộc thành "mất kết
+> nối cơ sở dữ liệu" (khách mua phải món vừa hết thấy lỗi hệ thống thay vì
+> "hết hàng"); và lỗi validate lồng nhau trả về `items.0.order.quantity_too_large`
+> nên không dịch được.
 
 ---
 

@@ -112,6 +112,17 @@ export class Env {
   @Min(1000)
   LOGIN_THROTTLE_TTL_MS = 300_000;
 
+  /** Số đơn một IP đặt được trong một cửa sổ. Chặn spam đơn ma. */
+  @toInt()
+  @IsInt()
+  @Min(1)
+  ORDER_THROTTLE_LIMIT = 10;
+
+  @toInt()
+  @IsInt()
+  @Min(1000)
+  ORDER_THROTTLE_TTL_MS = 600_000;
+
   /* --- Cloudflare (Phase 1 dùng cho migration, Phase 13 cho backup) --- */
 
   @IsOptional()

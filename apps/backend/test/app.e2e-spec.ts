@@ -8,6 +8,7 @@ import { AppModule } from './../src/app.module.js';
 import { AllExceptionsFilter } from './../src/common/filters/all-exceptions.filter.js';
 import { I18nService } from './../src/common/i18n/i18n.service.js';
 import { ResponseInterceptor } from './../src/common/interceptors/response.interceptor.js';
+import { validationExceptionFactory } from './../src/common/pipes/index.js';
 
 // Biến môi trường cho test nằm ở vitest.config.e2e.ts.
 describe('App (e2e)', () => {
@@ -21,7 +22,7 @@ describe('App (e2e)', () => {
     app = moduleFixture.createNestApplication();
     app.setGlobalPrefix('api/v1');
     app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true }),
+      new ValidationPipe({ whitelist: true, transform: true, exceptionFactory: validationExceptionFactory }),
     );
     app.useGlobalInterceptors(new ResponseInterceptor());
     app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost), app.get(I18nService)));

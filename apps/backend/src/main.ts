@@ -6,6 +6,7 @@ import { AppModule } from './app.module.js';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
 import { I18nService } from './common/i18n/i18n.service.js';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor.js';
+import { validationExceptionFactory } from './common/pipes/index.js';
 import { Env, NodeEnv, splitOrigins } from './config/env.js';
 
 const API_PREFIX = 'api/v1';
@@ -27,6 +28,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
       transformOptions: { enableImplicitConversion: true },
+      exceptionFactory: validationExceptionFactory,
     }),
   );
   app.useGlobalInterceptors(new ResponseInterceptor());

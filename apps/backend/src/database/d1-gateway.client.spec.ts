@@ -20,8 +20,8 @@ const okResponse = (body: unknown) =>
     headers: { 'content-type': 'application/json' },
   });
 
-const errorResponse = (status: number, code: string) =>
-  new Response(JSON.stringify({ error: { code, message: code } }), {
+const errorResponse = (status: number, code: string, message = code) =>
+  new Response(JSON.stringify({ error: { code, message } }), {
     status,
     headers: { 'content-type': 'application/json' },
   });
@@ -114,6 +114,18 @@ describe('D1GatewayClient', () => {
       client.batch([{ sql: 'select 1', params: [], method: 'all' }]),
     ).rejects.toBeInstanceOf(ServiceUnavailableException);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('giữ nguyên lỗi ràng buộc để service dịch thành lỗi nghiệp vụ', async () => {
+    // Bọc thành "mất kết nối" thì khách mua phải món vừa hết sẽ thấy báo lỗi
+    // hệ thống thay vì "sản phẩm đã hết hàng".
+    fetchMock.mockImplementation(async () =>
+      errorResponse(500, 'query_failed', 'D1_ERROR: CHECK constraint failed: stock'),
+    );
+
+    await expect(
+      client.query({ sql: 'update product_variants set stock = stock - 1', params: [], method: 'run' }),
+    ).rejects.toThrow(/CHECK constraint failed/);
   });
 
   it('không thử lại khi gateway trả lỗi 4xx', async () => {

@@ -11,6 +11,8 @@ import { DatabaseModule } from './database/database.module.js';
 import { HealthModule } from './health/health.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { CatalogModule } from './modules/catalog/catalog.module.js';
+import { OrderModule } from './modules/order/order.module.js';
+import { ShippingModule } from './modules/shipping/shipping.module.js';
 import { UploadModule } from './modules/upload/upload.module.js';
 import { AdminJwtGuard } from './modules/auth/guards/admin-jwt.guard.js';
 
@@ -39,7 +41,9 @@ import { AdminJwtGuard } from './modules/auth/guards/admin-jwt.guard.js';
     DatabaseModule,
     AuthModule,
     UploadModule,
+    ShippingModule,
     CatalogModule,
+    OrderModule,
     HealthModule,
   ],
   providers: [

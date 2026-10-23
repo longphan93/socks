@@ -70,6 +70,14 @@ export class D1GatewayClient {
       } catch (error) {
         lastError = error;
 
+        // SQL hỏng vì ràng buộc dữ liệu (hết hàng, trùng mã) là lỗi NGHIỆP VỤ,
+        // không phải hạ tầng. Giữ nguyên thông điệp để service dịch thành câu
+        // người dùng hiểu; nếu bọc thành "mất kết nối" thì khách mua phải món
+        // vừa hết sẽ thấy báo lỗi hệ thống.
+        if (error instanceof GatewayResponseError && error.isConstraintViolation) {
+          throw new D1ConstraintError(error.message);
+        }
+
         // Gateway đã trả lời và từ chối (SQL sai, sai secret...) thì thử lại vô ích.
         if (error instanceof GatewayResponseError && error.status < 500)
           throw error.toHttp();
@@ -117,6 +125,11 @@ export class D1GatewayClient {
   }
 }
 
+/** Ràng buộc dữ liệu bị vi phạm; service bắt lỗi này để trả câu nghiệp vụ. */
+export class D1ConstraintError extends Error {}
+
+const CONSTRAINT_MARKERS = ['CHECK constraint failed', 'UNIQUE constraint failed'];
+
 class GatewayResponseError extends Error {
   constructor(
     readonly status: number,
@@ -124,6 +137,10 @@ class GatewayResponseError extends Error {
     message: string,
   ) {
     super(`[${code}] ${message}`);
+  }
+
+  get isConstraintViolation(): boolean {
+    return CONSTRAINT_MARKERS.some((marker) => this.message.includes(marker));
   }
 
   toHttp(): ServiceUnavailableException {

@@ -1,0 +1,17 @@
+{
+  "empty_cart": "Your cart is empty",
+  "too_many_lines": "This order has too many lines",
+  "invalid_quantity": "Quantity must be at least 1",
+  "quantity_too_large": "At most 50 of each item per order",
+  "invalid_name": "Please enter your full name",
+  "invalid_phone": "That is not a valid Vietnamese phone number",
+  "invalid_email": "That email address is not valid",
+  "address_required": "Please fill in province, ward and street address",
+  "shipping_method_not_found": "That delivery option is no longer available",
+  "variant_unavailable": "An item in your cart is no longer on sale",
+  "out_of_stock": "An item in your cart just sold out — please review your cart",
+  "code_generation_failed": "Could not generate an order code. Please try again.",
+  "too_many_orders": "You have placed several orders just now. Please wait a few minutes.",
+  "rejected": "This order could not be submitted",
+  "not_found": "Order not found"
+}

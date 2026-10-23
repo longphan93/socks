@@ -1,0 +1,17 @@
+{
+  "empty_cart": "Giỏ hàng đang trống",
+  "too_many_lines": "Đơn có quá nhiều dòng hàng",
+  "invalid_quantity": "Số lượng phải từ 1 trở lên",
+  "quantity_too_large": "Mỗi loại chỉ đặt tối đa 50 cái một đơn",
+  "invalid_name": "Vui lòng nhập họ tên",
+  "invalid_phone": "Số điện thoại không đúng định dạng Việt Nam",
+  "invalid_email": "Email không hợp lệ",
+  "address_required": "Vui lòng nhập đầy đủ tỉnh/thành, xã/phường và địa chỉ",
+  "shipping_method_not_found": "Hình thức nhận hàng không còn khả dụng",
+  "variant_unavailable": "Có sản phẩm trong giỏ đã ngừng bán",
+  "out_of_stock": "Một sản phẩm trong giỏ vừa hết hàng, vui lòng kiểm tra lại giỏ",
+  "code_generation_failed": "Không tạo được mã đơn, vui lòng thử lại",
+  "too_many_orders": "Bạn vừa đặt khá nhiều đơn, vui lòng thử lại sau ít phút",
+  "rejected": "Không gửi được đơn này",
+  "not_found": "Không tìm thấy đơn hàng"
+}
