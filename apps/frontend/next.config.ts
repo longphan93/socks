@@ -1,7 +1,11 @@
+import { join } from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Gói sẵn server tối giản để Docker image không cần node_modules của FE.
+  output: 'standalone',
+  // Monorepo: trace file từ gốc workspace, không phải từ thư mục app.
+  outputFileTracingRoot: join(import.meta.dirname, '../..'),
   experimental: {
     agentFeedback: true,
   },

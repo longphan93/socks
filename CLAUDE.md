@@ -10,25 +10,27 @@ khách đặt hàng vãng lai, team gọi xác nhận thủ công (COD).
 
 ## Cấu trúc
 
-Hai repo riêng biệt, cùng nằm trong thư mục `socks/` khi làm local:
+Một repo duy nhất, npm workspaces:
 
 ```
 socks/
-├── backend/           repo socks-backend — NestJS (cổng 4000)
-│   ├── CLAUDE.md      ← file này
-│   ├── PLAN.md        ← danh sách phase và task, tick khi xong
-│   ├── src/
-│   ├── d1-gateway/    Cloudflare Worker có D1 binding
-│   ├── migrations/    SQL do drizzle-kit sinh
-│   └── scripts/
-└── frontend/          repo socks-frontend — Next.js App Router (cổng 4001)
-    ├── app/
-    ├── components/    ui/ (design system) và layout/
-    └── lib/           api/, cart/, tiện ích
+├── CLAUDE.md          ← file này
+├── PLAN.md            ← danh sách phase và task, tick khi xong
+├── Dockerfile         một image chứa cả hai app
+├── docker/start.mjs   chạy hai tiến trình trong một container
+├── vendor/            bản vá tạm của @longphan93/nestjs-migration
+└── apps/
+    ├── backend/       @socks/backend — NestJS (cổng 4000)
+    │   ├── src/
+    │   ├── d1-gateway/    Cloudflare Worker có D1 binding
+    │   └── scripts/
+    └── frontend/      @socks/frontend — Next.js App Router (cổng 4001)
+        ├── app/
+        ├── components/    ui/ (design system) và layout/
+        └── lib/           api/, cart/, tiện ích
 ```
 
-Tài liệu chung (`CLAUDE.md`, `PLAN.md`) ở trong repo backend; Dockerfile của
-Phase 13 cũng sẽ đặt ở đó.
+Lệnh chạy ở root; nhắm vào một app bằng `npm run <script> -w @socks/backend`.
 
 Tài liệu kế hoạch gốc chép thư mục là `apps/backend`, `apps/frontend`. Repo
 thật dùng `backend/`, `frontend/` ở cùng cấp — giữ nguyên, không đổi.
@@ -77,7 +79,7 @@ qua gateway trong một batch nguyên tử.
 
 ## Lệnh
 
-Backend (`cd backend`):
+Backend (`-w @socks/backend`):
 
 | Lệnh | Việc |
 | --- | --- |
@@ -89,11 +91,12 @@ Backend (`cd backend`):
 | `npm run r2:test` | Thử presigned upload lên R2 |
 | `npm run typecheck` / `lint` / `test` / `test:e2e` / `build` | |
 
-Frontend (`cd frontend`): `npm run dev` (cổng 4001), `typecheck`, `lint`,
-`format`, `build`.
+Frontend (`-w @socks/frontend`): `npm run dev` (cổng 4001), `typecheck`,
+`lint`, `format`, `build`.
 
-`npm install` ở backend cần `legacy-peer-deps` (đã đặt sẵn trong `.npmrc`) vì
-npm 10 gặp lỗi khi giải peer dependency vòng của `vite@8`/`vitest@4`.
+`npm install` chạy ở root cho cả hai app và cần `legacy-peer-deps` (đã đặt sẵn
+trong `.npmrc` ở root) vì npm 10 gặp lỗi khi giải peer dependency vòng của
+`vite@8`/`vitest@4`.
 
 ## Quy ước
 

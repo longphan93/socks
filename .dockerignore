@@ -1,0 +1,14 @@
+node_modules
+**/node_modules
+**/dist
+**/.next
+**/.wrangler
+.git
+.env
+.env.local
+**/.env
+**/.env.local
+**/.dev.vars
+*.md
+**/*.md
+!vendor/README.md

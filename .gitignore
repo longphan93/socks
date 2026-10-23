@@ -1,0 +1,22 @@
+node_modules/
+dist/
+.next/
+.turbo/
+*.tsbuildinfo
+
+# OS
+.DS_Store
+
+# Biến môi trường thật; mỗi app có .env.example riêng
+.env
+.env.local
+.env.*.local
+
+# Cloudflare Wrangler
+.wrangler/
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+
+# Build output
+coverage/

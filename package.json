@@ -1,0 +1,25 @@
+{
+  "name": "socks",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Website bán tất theo mùa và quà tặng — backend NestJS, frontend Next.js",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:backend": "npm run start:dev -w @socks/backend",
+    "dev:frontend": "npm run dev -w @socks/frontend",
+    "dev:gateway": "npm run gateway:dev -w @socks/backend",
+    "build": "npm run build -w @socks/backend && npm run build -w @socks/frontend",
+    "lint": "npm run lint -w @socks/backend && npm run lint -w @socks/frontend",
+    "typecheck": "npm run typecheck -w @socks/backend && npm run typecheck -w @socks/frontend",
+    "test": "npm test -w @socks/backend",
+    "test:e2e": "npm run test:e2e -w @socks/backend",
+    "format": "npm run format -w @socks/backend && npm run format -w @socks/frontend",
+    "db:migrate": "npm run db:migrate -w @socks/backend",
+    "db:migrate:revert": "npm run db:migrate:revert -w @socks/backend",
+    "mail:dev": "npm run mail:dev -w @socks/backend",
+    "docker:build": "docker build -t socks:local .",
+    "docker:run": "docker run --rm -p 4000:4000 -p 4001:4001 --env-file apps/backend/.env socks:local"
+  }
+}

@@ -210,7 +210,7 @@ Luồng status hợp lệ:
 - [ ] E2E Playwright: xem sản phẩm → thêm giỏ → checkout → admin xác nhận → COMPLETED → kiểm tra email feedback
 - [ ] SEO: sitemap, robots, Open Graph, structured data cho sản phẩm
 - [ ] `next/image` khai báo `remotePatterns` cho domain R2, Lighthouse ≥ 90 trên mobile
-- [ ] Dockerfile multi-stage build 1 image chứa cả BE và FE, **đặt trong repo `socks-backend`**; FE lấy từ repo riêng (CI build thành artifact rồi copy vào, hoặc build-arg là commit của FE); entrypoint chạy migration trước rồi mới start 2 process
+- [x] Dockerfile multi-stage build 1 image chứa cả BE và FE; entrypoint chạy migration trước rồi mới start 2 process (`docker/start.mjs` giám sát, một tiến trình chết là container dừng). Đã build và chạy thử: migration chạy trước, health trả `database: ok`, FE render
 - [ ] Sao lưu DB: dùng D1 Time Travel để khôi phục theo thời điểm, thêm job export định kỳ (`wrangler d1 export`) lên R2; deploy gateway bằng `wrangler deploy`; viết hướng dẫn restore
 - [ ] Cloudflare: DNS, proxy + SSL Full (strict), custom domain cho bucket ảnh
 - [ ] README hướng dẫn chạy local và deploy
@@ -455,11 +455,11 @@ export const emailLogs = sqliteTable(
 | 5 | Mã đơn | `SK-YYYYMMDD-XXXX` với 4 ký tự ngẫu nhiên + unique, trùng thì sinh lại |
 | 6 | Phí ship | Một mức phẳng, mặc định 20.000 ₫, admin sửa được trong trang quản trị. Không tính theo khoảng cách |
 | 7 | Feedback | Làm landing page trên site, không dùng form ngoài |
-| 8 | Repo | Giữ hai repo riêng biệt, không gộp monorepo |
+| 8 | Repo | ~~Giữ hai repo riêng~~ → **gộp thành monorepo npm workspaces** (`apps/backend`, `apps/frontend`), repo `socks-frontend` đã xoá |
 | 9 | Địa chỉ | Hai cấp: tỉnh/thành → xã/phường. Bỏ cấp quận/huyện |
 | 10 | Miễn phí ship | Đơn từ 300.000 ₫ trở lên được miễn phí giao hàng |
-| 11 | Tài liệu chung | `CLAUDE.md` và `PLAN.md` nằm trong repo `socks-backend` |
-| 12 | Dockerfile | Đặt trong repo `socks-backend`, build FE từ nguồn ngoài |
+| 11 | Tài liệu chung | `CLAUDE.md` và `PLAN.md` nằm ở gốc monorepo |
+| 12 | Dockerfile | Một image chứa cả hai app, build thẳng từ monorepo |
 
 Ảnh hưởng tới schema Phase 2:
 
@@ -475,6 +475,13 @@ export const emailLogs = sqliteTable(
   thành đường dẫn nội bộ.
 
 ### Còn mở
+
+1. **`@longphan93/nestjs-migration` chưa publish bản dùng được.** Monorepo đang
+   cài từ `vendor/longphan93-nestjs-migration-1.0.1.tgz` — bản vá build tại chỗ.
+   Khi 1.0.2 lên GitHub Packages thì xoá `vendor/` và đổi dependency trong
+   `apps/backend/package.json` về `^1.0.2`. Chi tiết 4 điểm cần vá: `vendor/README.md`.
+2. **Tên repo trên GitHub vẫn là `socks-backend`** trong khi nó đã chứa cả hai
+   app. Đổi tên thành `socks` thì `git remote set-url` lại một lần là xong.
 
 Không còn điểm nào chặn Phase 2.
 
