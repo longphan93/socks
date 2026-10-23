@@ -15,8 +15,8 @@ nó cần — để có trang quản trị dùng được sớm thay vì đợi 
 | 4 | Phase 2 — Database schema MVP | xong |
 | 5 | Phase 3 — BE Admin auth | xong |
 | 6 | Phase 4 — BE Catalog | xong |
-| 7 | **Phase 12a — FE Admin: đăng nhập + quản lý catalog** | ← tiếp theo · **admin dùng được từ đây** |
-| 8 | Phase 5 — BE Upload ảnh | |
+| 7 | Phase 12a — FE Admin: đăng nhập + quản lý catalog | xong · **admin dùng được** |
+| 8 | **Phase 5 — BE Upload ảnh** | ← tiếp theo |
 | 9 | **Phase 12b — FE Admin: upload ảnh sản phẩm** | |
 | 10 | Phase 6 — BE Guest checkout | |
 | 11 | Phase 7 — BE Quản lý đơn hàng | |
@@ -516,16 +516,30 @@ app/
 Route group `(storefront)` không xuất hiện trong URL, nên `/`, `/cart` giữ
 nguyên đường dẫn.
 
-- [ ] `/admin/login`: form đăng nhập, lưu JWT, báo lỗi sai mật khẩu rõ ràng
-- [ ] Middleware chặn toàn bộ `/admin/*` khi chưa đăng nhập, hết hạn token thì đá về login
-- [ ] Tách route group: chuyển trang storefront vào `app/(storefront)/` với layout chứa Header + Footer, `app/layout.tsx` gốc chỉ còn `<html>`, font và `<Toaster />`
-- [ ] Khung admin ở `app/admin/layout.tsx`: sidebar + topbar, **không có header/footer của storefront**, có nút đăng xuất
-- [ ] Mọi form có trường dịch được đều có **tab vi / en**; bỏ trống tiếng Anh thì lưu được, hiển thị rơi về tiếng Việt
-- [ ] Quản lý category: danh sách gom theo `group` (gồm cả `COLLECTION`), tạo / sửa / bật tắt / đổi `sortOrder`
-- [ ] Quản lý size và màu (`variant_options`): thêm / sửa / ẩn, màu có chọn mã hex
-- [ ] Quản lý product: danh sách có tìm kiếm và phân trang, tạo / sửa, gán nhiều category, thêm biến thể (size + màu + giá + tồn kho)
+- [x] `/admin/login`: form đăng nhập, lưu JWT, báo lỗi sai mật khẩu rõ ràng
+- [x] Middleware chặn toàn bộ `/admin/*` khi chưa đăng nhập, hết hạn token thì đá về login
+- [x] Tách route group: chuyển trang storefront vào `app/(storefront)/` với layout chứa Header + Footer, `app/layout.tsx` gốc chỉ còn `<html>`, font và `<Toaster />`
+- [x] Khung admin ở `app/admin/layout.tsx`: sidebar + topbar, **không có header/footer của storefront**, có nút đăng xuất
+- [x] Mọi form có trường dịch được đều có **tab vi / en**; bỏ trống tiếng Anh thì lưu được, hiển thị rơi về tiếng Việt
+- [x] Quản lý category: danh sách gom theo `group` (gồm cả `COLLECTION`), tạo / sửa / bật tắt / đổi `sortOrder`
+- [x] Quản lý size và màu (`variant_options`): thêm / sửa / ẩn, màu có chọn mã hex
+- [x] Quản lý product: danh sách có tìm kiếm và phân trang, tạo / sửa, gán nhiều category, thêm biến thể (size + màu + giá + tồn kho)
 
-> **Xong khi:** đăng nhập vào `/admin` tạo được category và một product có ít nhất hai biến thể; đăng xuất rồi mở lại `/admin/products` thì bị đá về trang login.
+> **Xong khi:** đăng nhập vào `/admin` tạo được category và một product có ít nhất hai biến thể; đăng xuất rồi mở lại `/admin/products` thì bị đá về trang login. ✅
+>
+> Middleware kiểm chứng bằng cách gọi thật: `/admin` và `/admin/products` khi
+> chưa có cookie đều trả 307 về `/admin/login?next=...`; `/admin/login` mở được;
+> storefront `/`, `/cart`, `/search` không bị ảnh hưởng. Khung tách đúng: trang
+> admin không có header/footer storefront và ngược lại.
+>
+> Luồng tạo dữ liệu kiểm bằng cách gọi đúng các endpoint và đúng body mà giao
+> diện gửi: đăng nhập → tải 23 category và 16 size/màu cho form → tạo category →
+> tạo product 2 biến thể (SKU tự sinh, giá và tồn riêng) → sản phẩm hiện ngay
+> ngoài storefront. **Chưa bấm thử trên trình duyệt** — click-through để Phase 13
+> làm bằng Playwright.
+>
+> Hai thứ Phase 4 còn thiếu đã bổ sung trước: API `variant_options` và danh sách
+> sản phẩm cho admin (thấy cả hàng đã tắt).
 
 ---
 

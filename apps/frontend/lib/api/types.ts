@@ -64,6 +64,13 @@ export interface ProductImage {
   alt: string | null;
 }
 
+export type ProductDetail = Product;
+
+/** Dạng rút gọn cho lưới và danh sách quản trị. */
+export type ProductSummary = Omit<Product, 'description' | 'images' | 'categories'> & {
+  image: ProductImage | null;
+};
+
 export interface Product {
   id: string;
   slug: string;
@@ -121,3 +128,38 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   COMPLETED: 'Hoàn thành',
   CANCELLED: 'Đã huỷ',
 };
+
+/* --------------------------------------------------------------- quản trị */
+
+export interface AdminProfile {
+  id: string;
+  email: string;
+  name: string;
+}
+
+export interface LoginResult {
+  accessToken: string;
+  expiresIn: string;
+  admin: AdminProfile;
+}
+
+export const VARIANT_OPTION_KINDS = ['SIZE', 'COLOR'] as const;
+
+export type VariantOptionKind = (typeof VARIANT_OPTION_KINDS)[number];
+
+/** Khác `VariantOption` ở chỗ có kind và trạng thái; dùng trong trang quản trị. */
+export interface VariantOptionDetail {
+  id: string;
+  kind: VariantOptionKind;
+  value: string;
+  label: string;
+  hexColor: string | null;
+  sortOrder: number;
+  isActive: boolean;
+}
+
+/** Nội dung dịch được khi gửi lên API: tiếng Việt bắt buộc. */
+export interface TranslatedField {
+  vi: string;
+  en?: string;
+}

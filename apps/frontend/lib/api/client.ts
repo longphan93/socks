@@ -28,6 +28,8 @@ export interface ApiRequestOptions extends Omit<
    * nên mọi request storefront đều ẩn danh.
    */
   token?: string | null;
+  /** Đặt false khi cần cả `meta`, ví dụ số liệu phân trang. */
+  unwrap?: boolean;
 }
 
 /**
@@ -44,6 +46,7 @@ export async function apiFetch<T>(
     searchParams,
     token,
     headers,
+    unwrap = true,
     ...rest
   } = options;
 
@@ -82,7 +85,7 @@ export async function apiFetch<T>(
     throw new ApiError(response.status, 'Máy chủ trả về dữ liệu không hợp lệ.');
   }
 
-  return envelope.data;
+  return (unwrap ? envelope.data : envelope) as T;
 }
 
 function toErrorList(value: unknown): string[] | undefined {

@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 import { Be_Vietnam_Pro } from 'next/font/google';
-import { Footer } from '@/components/layout/footer';
-import { Header } from '@/components/layout/header';
 import { Toaster } from '@/components/ui/toast';
 import './globals.css';
 
@@ -14,9 +13,7 @@ const beVietnamPro = Be_Vietnam_Pro({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001',
-  ),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:4001'),
   title: {
     default: 'Tất & Quà — Tất theo mùa và quà tặng',
     template: '%s · Tất & Quà',
@@ -25,13 +22,15 @@ export const metadata: Metadata = {
     'Tất nam, nữ, trẻ em theo từng mùa và quà tặng cho mọi dịp. Đặt hàng không cần tài khoản, thanh toán khi nhận hàng.',
 };
 
-export default function RootLayout({ children }: LayoutProps<'/'>) {
+/**
+ * Chỉ giữ phần dùng chung cho cả storefront lẫn admin: html, font, toast.
+ * Header và Footer nằm ở `(storefront)/layout.tsx`.
+ */
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="vi" className={`${beVietnamPro.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        {children}
         <Toaster />
       </body>
     </html>
