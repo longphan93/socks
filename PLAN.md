@@ -13,8 +13,8 @@ nó cần — để có trang quản trị dùng được sớm thay vì đợi 
 | 2 | Phase 1 — BE core và migration | xong |
 | 3 | Phase 9 — FE nền tảng | xong |
 | 4 | Phase 2 — Database schema MVP | xong |
-| 5 | **Phase 3 — BE Admin auth** | ← tiếp theo |
-| 6 | Phase 4 — BE Catalog | |
+| 5 | Phase 3 — BE Admin auth | xong |
+| 6 | **Phase 4 — BE Catalog** | ← tiếp theo |
 | 7 | **Phase 12a — FE Admin: đăng nhập + quản lý catalog** | **admin dùng được từ đây** |
 | 8 | Phase 5 — BE Upload ảnh | |
 | 9 | **Phase 12b — FE Admin: upload ảnh sản phẩm** | |
@@ -294,11 +294,18 @@ Phác thảo schema ở [phụ lục cuối file](#phụ-lục--phác-thảo-dri
 
 ## Phase 3 — BE Admin auth
 
-- [ ] Đăng nhập admin, JWT access token (+ refresh tuỳ chọn), guard cho toàn bộ route `/admin/*`
-- [ ] Không có đăng ký; admin tạo từ seed hoặc CLI script
-- [ ] Giới hạn số lần đăng nhập sai bằng `@nestjs/throttler`
+- [x] Đăng nhập admin, JWT access token, guard **global mặc định đóng** — route mới quên bảo vệ thì vẫn cần token, `@Public()` để mở. Chưa làm refresh token (tuỳ chọn trong plan)
+- [x] Không có đăng ký; admin tạo từ seed hoặc CLI script
+- [x] Giới hạn số lần đăng nhập sai bằng `@nestjs/throttler`
 
-> **Xong khi:** mọi route `/api/v1/admin/*` trả 401 khi thiếu token.
+- [x] i18n backend: lỗi là key, dịch theo `Accept-Language`, message ở `src/i18n/{vi,en}/*.json`
+
+> **Xong khi:** mọi route `/api/v1/admin/*` trả 401 khi thiếu token. ✅
+>
+> Đã chạy thật: thiếu token 401 · token rác 401 · sai mật khẩu và email không
+> tồn tại trả **cùng một thông báo** · đăng nhập đúng trả token dùng được ở
+> `/me` · health vẫn mở nhờ `@Public()` · đăng nhập sai lần thứ 6 bị chặn 429,
+> route khác không ảnh hưởng · thông báo lỗi đổi theo `Accept-Language`.
 
 ---
 

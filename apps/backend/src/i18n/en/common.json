@@ -1,0 +1,7 @@
+{
+  "internal_error": "Something went wrong. Please try again later.",
+  "not_found": "We could not find what you asked for",
+  "validation_failed": "The submitted data is not valid",
+  "too_many_requests": "Too many attempts. Please wait a few minutes and try again.",
+  "database_unavailable": "Could not reach the database"
+}

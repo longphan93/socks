@@ -79,6 +79,28 @@ export class Env {
   @Min(0)
   CATALOG_CACHE_TTL_MS = 30_000;
 
+  /* --- Đăng nhập admin (Phase 3) --- */
+
+  @IsString()
+  @MinLength(32, { message: 'JWT_SECRET phải dài ít nhất 32 ký tự' })
+  JWT_SECRET!: string;
+
+  /** Thời hạn access token, định dạng của `jsonwebtoken` (vd 7d, 12h). */
+  @IsString()
+  @IsNotEmpty()
+  JWT_EXPIRES_IN = '7d';
+
+  /** Số lần đăng nhập sai cho phép trong một cửa sổ thời gian. */
+  @toInt()
+  @IsInt()
+  @Min(1)
+  LOGIN_THROTTLE_LIMIT = 5;
+
+  @toInt()
+  @IsInt()
+  @Min(1000)
+  LOGIN_THROTTLE_TTL_MS = 300_000;
+
   /* --- Cloudflare (Phase 1 dùng cho migration, Phase 13 cho backup) --- */
 
   @IsOptional()

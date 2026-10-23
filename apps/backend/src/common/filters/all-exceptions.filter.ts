@@ -8,13 +8,17 @@ import {
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 import { ApiResponse } from '../dto/api-response.dto.js';
+import { I18nService } from '../i18n/i18n.service.js';
 
 /** Lỗi cũng trả về `{ data, message, meta }` để client chỉ phải xử lý một hình dạng. */
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
 
-  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
+  constructor(
+    private readonly httpAdapterHost: HttpAdapterHost,
+    private readonly i18n: I18nService,
+  ) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const { httpAdapter } = this.httpAdapterHost;
@@ -26,18 +30,18 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
+    const locale = this.i18n.resolveLocale(request?.headers?.['accept-language']);
     const { message, errors } = describe(exception, status);
 
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
-      this.logger.error(
-        message,
-        exception instanceof Error ? exception.stack : undefined,
-      );
+      this.logger.error(message, exception instanceof Error ? exception.stack : undefined);
     }
 
     const body: ApiResponse<null> = {
       data: null,
-      message,
+      // Message trong code là i18n key; dịch ở đây là chỗ duy nhất biết ngôn ngữ
+      // của request.
+      message: this.i18n.translate(message, locale),
       meta: {
         statusCode: status,
         path: httpAdapter.getRequestUrl(request),
@@ -50,10 +54,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
   }
 }
 
-function describe(
-  exception: unknown,
-  status: number,
-): { message: string; errors?: unknown } {
+function describe(exception: unknown, status: number): { message: string; errors?: unknown } {
   if (exception instanceof HttpException) {
     const response = exception.getResponse();
 
@@ -62,15 +63,13 @@ function describe(
     if (typeof response === 'object' && response !== null) {
       const payload = response as { message?: unknown; error?: unknown };
 
-      // ValidationPipe trả message dạng mảng chuỗi lỗi.
+      // ValidationPipe trả message dạng mảng key lỗi của từng trường.
       if (Array.isArray(payload.message)) {
-        return {
-          message: 'Dữ liệu gửi lên không hợp lệ',
-          errors: payload.message,
-        };
+        return { message: 'common.validation_failed', errors: payload.message };
       }
-      if (typeof payload.message === 'string')
-        return { message: payload.message };
+
+      if (typeof payload.message === 'string') return { message: payload.message };
+
       if (typeof payload.error === 'string') return { message: payload.error };
     }
 
@@ -80,8 +79,6 @@ function describe(
   // Không lộ chi tiết lỗi nội bộ ra ngoài.
   return {
     message:
-      status >= HttpStatus.INTERNAL_SERVER_ERROR
-        ? 'Có lỗi xảy ra, vui lòng thử lại sau'
-        : String(exception),
+      status >= HttpStatus.INTERNAL_SERVER_ERROR ? 'common.internal_error' : String(exception),
   };
 }

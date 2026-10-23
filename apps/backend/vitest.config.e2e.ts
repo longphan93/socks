@@ -15,6 +15,7 @@ export default defineConfig({
       D1_GATEWAY_SECRET: 'secret-du-dai-16-ky-tu',
       D1_GATEWAY_TIMEOUT_MS: '300',
       D1_GATEWAY_RETRIES: '0',
+      JWT_SECRET: 'test-secret-toi-thieu-32-ky-tu-cho-vitest',
     },
   },
 });

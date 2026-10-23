@@ -1,0 +1,7 @@
+{
+  "internal_error": "Có lỗi xảy ra, vui lòng thử lại sau",
+  "not_found": "Không tìm thấy nội dung bạn yêu cầu",
+  "validation_failed": "Dữ liệu gửi lên không hợp lệ",
+  "too_many_requests": "Bạn thao tác quá nhanh, vui lòng thử lại sau ít phút",
+  "database_unavailable": "Không kết nối được cơ sở dữ liệu"
+}

@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
+import { I18nService } from './common/i18n/i18n.service.js';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor.js';
 import { Env, NodeEnv, splitOrigins } from './config/env.js';
 
@@ -29,7 +30,7 @@ async function bootstrap() {
     }),
   );
   app.useGlobalInterceptors(new ResponseInterceptor());
-  app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost)));
+  app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost), app.get(I18nService)));
 
   if (config.get('NODE_ENV', { infer: true }) !== NodeEnv.Production) {
     SwaggerModule.setup(

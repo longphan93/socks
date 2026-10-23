@@ -171,6 +171,19 @@ tiếng. Response envelope giữ `{ data, message, meta }` theo PLAN, không dù
   `{vi, en}`.
 - Tiền luôn VND ở cả hai ngôn ngữ, không quy đổi tiền tệ.
 
+## Bảo vệ route
+
+`AdminJwtGuard` đăng ký global nên **mặc định mọi route đều cần token**. Route
+công khai của storefront phải gắn `@Public()`
+(`src/modules/auth/decorators/public.decorator.ts`).
+
+Mặc định đóng để route admin thêm về sau không thể quên bảo vệ. Quên `@Public()`
+trên route storefront thì lỗi lộ ra ngay lần gọi đầu; quên guard trên route
+admin thì không ai biết cho tới khi bị lạm dụng.
+
+Giới hạn tần suất: throttler `default` cho mọi route, `login` riêng cho đăng
+nhập (`@Throttle({ login: {} })`).
+
 ## Định dạng response API
 
 Mọi response, kể cả lỗi, đều có hình dạng:

@@ -4,6 +4,7 @@ import { NodeEnv, splitOrigins, validateEnv } from './env.js';
 const valid = {
   D1_GATEWAY_URL: 'http://127.0.0.1:8787',
   D1_GATEWAY_SECRET: 'secret-du-dai-16-ky-tu',
+  JWT_SECRET: 'secret-toi-thieu-32-ky-tu-cho-bai-test',
 };
 
 describe('validateEnv', () => {
@@ -30,6 +31,10 @@ describe('validateEnv', () => {
 
   it('báo lỗi khi thiếu cấu hình gateway', () => {
     expect(() => validateEnv({})).toThrow(/D1_GATEWAY_URL/);
+  });
+
+  it('bắt buộc JWT_SECRET đủ dài', () => {
+    expect(() => validateEnv({ ...valid, JWT_SECRET: 'ngan' })).toThrow(/JWT_SECRET/);
   });
 
   it('báo lỗi khi secret quá ngắn', () => {

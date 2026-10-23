@@ -6,6 +6,7 @@ import { App } from 'supertest/types.js';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from './../src/app.module.js';
 import { AllExceptionsFilter } from './../src/common/filters/all-exceptions.filter.js';
+import { I18nService } from './../src/common/i18n/i18n.service.js';
 import { ResponseInterceptor } from './../src/common/interceptors/response.interceptor.js';
 
 // Biến môi trường cho test nằm ở vitest.config.e2e.ts.
@@ -23,7 +24,7 @@ describe('App (e2e)', () => {
       new ValidationPipe({ whitelist: true, transform: true }),
     );
     app.useGlobalInterceptors(new ResponseInterceptor());
-    app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost)));
+    app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost), app.get(I18nService)));
     await app.init();
   });
 
@@ -61,5 +62,34 @@ describe('App (e2e)', () => {
 
   it('API chỉ phục vụ dưới prefix /api/v1', async () => {
     await request(app.getHttpServer()).get('/health').expect(404);
+  });
+
+  it('route /admin/* trả 401 khi thiếu token', async () => {
+    const response = await request(app.getHttpServer()).get('/api/v1/admin/auth/me').expect(401);
+
+    expect(response.body.data).toBeNull();
+    expect(response.body.meta).toMatchObject({ statusCode: 401 });
+  });
+
+  it('token rác cũng bị từ chối', async () => {
+    await request(app.getHttpServer())
+      .get('/api/v1/admin/auth/me')
+      .set('authorization', 'Bearer khong-phai-token')
+      .expect(401);
+  });
+
+  it('guard mặc định đóng, health mở được nhờ @Public', async () => {
+    await request(app.getHttpServer()).get('/api/v1/health').expect(200);
+  });
+
+  it('thông báo lỗi dịch theo Accept-Language', async () => {
+    const vi = await request(app.getHttpServer()).get('/api/v1/admin/auth/me').expect(401);
+    const en = await request(app.getHttpServer())
+      .get('/api/v1/admin/auth/me')
+      .set('accept-language', 'en-US,en;q=0.9')
+      .expect(401);
+
+    expect(vi.body.message).toBe('Bạn cần đăng nhập để tiếp tục');
+    expect(en.body.message).toBe('Please sign in to continue');
   });
 });
